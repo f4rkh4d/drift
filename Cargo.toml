@@ -1,0 +1,15 @@
+[package]
+name = "drift"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "sql linter and formatter in rust. multi-dialect. single binary."
+license = "MIT"
+authors = ["farkhad <bennett@frkhd.com>"]
+repository = "https://github.com/f4rkh4d/drift"
+readme = "README.md"
+
+[dependencies]
+sqlparser = "0.52"
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
