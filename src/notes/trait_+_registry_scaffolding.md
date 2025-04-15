@@ -1,0 +1,1 @@
+- 2025-04-15: rules: trait + registry scaffolding
