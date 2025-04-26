@@ -1,0 +1,1 @@
+- 2025-04-26: rules/correctness: cartesian-join heuristic
