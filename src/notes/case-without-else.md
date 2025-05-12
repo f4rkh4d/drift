@@ -1,0 +1,1 @@
+- 2025-05-12: rules/correctness: case-without-else
