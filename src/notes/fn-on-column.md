@@ -1,0 +1,1 @@
+- 2025-05-31: rules/performance: fn-on-column
