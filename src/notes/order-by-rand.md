@@ -1,0 +1,1 @@
+- 2025-06-11: rules/performance: order-by-rand
