@@ -1,0 +1,1 @@
+- 2025-06-15: rules/performance: offset-paging heuristic
