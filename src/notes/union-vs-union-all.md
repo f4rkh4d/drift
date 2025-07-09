@@ -1,0 +1,1 @@
+- 2025-07-09: rules/correctness: union-vs-union-all
