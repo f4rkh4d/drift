@@ -1,0 +1,1 @@
+- 2025-09-06: rules/security: truncate-no-cascade
