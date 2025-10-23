@@ -1,0 +1,1 @@
+- 2025-10-23: rules/conventions: index-naming
