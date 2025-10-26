@@ -1,0 +1,1 @@
+- 2025-10-26: rules/conventions: no-hungarian
