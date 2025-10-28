@@ -1,5 +1,9 @@
 # changelog
 
+## [0.8.0] — 2025-10-28
+
+tagged 0.8.0. see git log for the full span.
+
 ## [0.7.0] — 2025-10-06
 
 tagged 0.7.0. see git log for the full span.
