@@ -1,0 +1,1 @@
+- 2025-12-17: rules/ambiguity: reserved-as-identifier
