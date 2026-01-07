@@ -1,0 +1,1 @@
+- 2026-01-07: rules/correctness: self-join-no-alias walks joins
