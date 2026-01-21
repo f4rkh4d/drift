@@ -1,0 +1,1 @@
+- 2026-01-21: fixer: keyword-case auto-fix via sqlparser spans
