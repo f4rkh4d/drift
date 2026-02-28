@@ -1,0 +1,1 @@
+- 2026-02-28: cli: lsp subcommand
