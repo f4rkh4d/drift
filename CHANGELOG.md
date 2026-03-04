@@ -1,5 +1,9 @@
 # changelog
 
+## [0.13.0] — 2026-03-04
+
+tagged 0.13.0. see git log for the full span.
+
 ## [0.12.0] — 2026-02-08
 
 tagged 0.12.0. see git log for the full span.
