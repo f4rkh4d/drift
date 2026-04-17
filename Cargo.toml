@@ -1,6 +1,6 @@
 [package]
 name = "drift"
-version = "0.14.39"
+version = "0.14.40"
 edition = "2021"
 rust-version = "1.75"
 description = "sql linter and formatter in rust. multi-dialect. single binary."
