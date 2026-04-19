@@ -1,7 +1,7 @@
 # drift
 
 
-![demo](docs/hero.gif)
+![demo](docs/demo.gif)
 sql linter and formatter in rust. 5 dialects. single binary.
 
 80+ rules. on my laptop it lints a 4,200-file dbt project in about 3.1 seconds, which is somewhere between 60 and 180 times faster than sqlfluff against the same corpus depending on how many macros you have.
