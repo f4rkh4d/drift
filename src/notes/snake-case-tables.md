@@ -1,1 +1,0 @@
-- 2025-10-11: rules/conventions: snake-case-tables

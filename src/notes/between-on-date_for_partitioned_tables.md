@@ -1,1 +1,0 @@
-- 2025-11-10: rules/correctness: between-on-date for partitioned tables

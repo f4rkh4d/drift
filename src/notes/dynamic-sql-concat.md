@@ -1,1 +1,0 @@
-- 2025-08-28: rules/security: dynamic-sql-concat

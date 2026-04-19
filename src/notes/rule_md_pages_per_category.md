@@ -1,1 +1,0 @@
-- 2026-03-26: docs: rule md pages per category

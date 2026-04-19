@@ -1,1 +1,0 @@
-- 2026-03-06: cli: explain subcommand with examples

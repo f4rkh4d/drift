@@ -1,1 +1,0 @@
-- 2025-09-02: rules/security: drop-without-if-exists

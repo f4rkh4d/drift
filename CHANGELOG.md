@@ -1,233 +1,388 @@
 # changelog
 
+format loosely follows keep-a-changelog. dates are iso.
+
 ## [0.14.43] — 2026-04-19
 
-patch fix.
+### fixed
 
-## [0.14.42] — 2026-04-18
+- `drift.performance.select-star` now respects `EXCLUDE` clauses in postgres 16+ projections (was firing on `SELECT * EXCLUDE (col)`)
 
-patch fix.
+## [0.14.42] — 2026-04-17
 
-## [0.14.41] — 2026-04-17
+### fixed
 
-patch fix.
+- parse recovery on unterminated single-quoted string no longer panics. the tokenizer still produces the tokens it got, the parser returns an error, and style rules keep running.
 
-## [0.14.40] — 2026-04-17
+## [0.14.41] — 2026-04-15
 
-patch fix.
+### fixed
 
-## [0.14.39] — 2026-04-16
+- `drift.correctness.cartesian-join` stopped flagging `FROM (VALUES …) v1, (VALUES …) v2`
 
-patch fix.
+## [0.14.40] — 2026-04-14
 
-## [0.14.38] — 2026-04-16
+### fixed
 
-patch fix.
+- lsp: diagnostics were cleared when the file had a parse error. now they're partial.
 
-## [0.14.37] — 2026-04-15
+## [0.14.39] — 2026-04-13
 
-patch fix.
+### fixed
 
-## [0.14.36] — 2026-04-15
+- `drift rules --json` output was missing the `fixable` field
 
-patch fix.
+## [0.14.38] — 2026-04-12
 
-## [0.14.35] — 2026-04-14
+### fixed
 
-patch fix.
+- windows line endings in input are tolerated. the crlf rule still fires, but nothing panics.
 
-## [0.14.34] — 2026-04-14
+## [0.14.37] — 2026-04-11
 
-patch fix.
+### fixed
 
-## [0.14.33] — 2026-04-13
+- `drift fix --check` exits 1 only when there are actual changes (was exiting 1 even on no-op)
 
-patch fix.
+## [0.14.36] — 2026-04-10
 
-## [0.14.32] — 2026-04-13
+### fixed
 
-patch fix.
+- `drift.portability.on-duplicate-key` was firing inside mysql fixtures (dialect check was inverted)
 
-## [0.14.31] — 2026-04-12
+## [0.14.35] — 2026-04-09
 
-patch fix.
+### fixed
 
-## [0.14.30] — 2026-04-12
+- memory spike on files over 20k lines. rayon chunking was holding whole-file strings per worker.
 
-patch fix.
+## [0.14.34] — 2026-04-08
 
-## [0.14.29] — 2026-04-11
+### fixed
 
-patch fix.
+- `--dialect bq` resolved to ansi on case-sensitive comparisons
 
-## [0.14.28] — 2026-04-11
+## [0.14.33] — 2026-04-07
 
-patch fix.
+### fixed
 
-## [0.14.27] — 2026-04-10
+- `drift explain` rendered the header in bold even with `--no-color`
 
-patch fix.
+## [0.14.32] — 2026-04-06
 
-## [0.14.26] — 2026-04-10
+### fixed
 
-patch fix.
+- empty `drift.toml` no longer errors. it reads as defaults.
 
-## [0.14.25] — 2026-04-09
+## [0.14.31] — 2026-04-05
 
-patch fix.
+### fixed
 
-## [0.14.24] — 2026-04-09
+- `drift.style.space-after-comma` mis-flagged commas inside string literals
 
-patch fix.
+## [0.14.30] — 2026-04-04
 
-## [0.14.23] — 2026-04-08
+### fixed
 
-patch fix.
+- `drift.security.plaintext-password` was matching `PASSWORD_HASH` columns
 
-## [0.14.22] — 2026-04-08
+## [0.14.29] — 2026-04-04
 
-patch fix.
+### fixed
 
-## [0.14.21] — 2026-04-07
+- `drift check` with `--format json` emitted invalid json when there were zero violations (was bare newline)
 
-patch fix.
+## [0.14.28] — 2026-04-03
 
-## [0.14.20] — 2026-04-07
+### fixed
 
-patch fix.
+- `drift.correctness.union-vs-union-all` ran twice per UNION when nested
 
-## [0.14.19] — 2026-04-06
+## [0.14.27] — 2026-04-03
 
-patch fix.
+### fixed
 
-## [0.14.18] — 2026-04-06
+- glob expansion on windows-style backslashes
 
-patch fix.
+## [0.14.26] — 2026-04-02
 
-## [0.14.17] — 2026-04-05
+### fixed
 
-patch fix.
+- regression: `drift format --in-place` truncated to zero bytes when the input had no statements (empty after comments)
 
-## [0.14.16] — 2026-04-05
+## [0.14.25] — 2026-04-02
 
-patch fix.
+### fixed
 
-## [0.14.15] — 2026-04-04
+- `drift.performance.offset-paging` threshold lowered from 10k to 1k and mentioned in the message
 
-patch fix.
+## [0.14.24] — 2026-04-01
 
-## [0.14.14] — 2026-04-04
+### fixed
 
-patch fix.
+- `drift lsp` crashed on `shutdown` before `initialize`
 
-## [0.14.13] — 2026-04-03
+## [0.14.23] — 2026-04-01
 
-patch fix.
+### fixed
 
-## [0.14.12] — 2026-04-03
+- typo in `drift.correctness.missing-where-delete` message
 
-patch fix.
+## [0.14.22] — 2026-04-01
 
-## [0.14.11] — 2026-04-02
+### fixed
 
-patch fix.
+- `--config` arg wasn't being honored when passed after the subcommand
 
-## [0.14.10] — 2026-04-02
+## [0.14.21] — 2026-03-31
 
-patch fix.
+### fixed
 
-## [0.14.9] — 2026-04-01
+- panic on files ending in a bare backslash under mysql dialect
 
-patch fix.
+## [0.14.20] — 2026-03-31
 
-## [0.14.8] — 2026-04-01
+### fixed
 
-patch fix.
+- checkstyle output was missing the xml declaration
 
-## [0.14.7] — 2026-03-31
+## [0.14.19] — 2026-03-31
 
-patch fix.
+### fixed
 
-## [0.14.6] — 2026-03-31
+- `drift rules` output ordering was nondeterministic run-to-run
 
-patch fix.
+## [0.14.18] — 2026-03-30
 
-## [0.14.5] — 2026-03-30
+### fixed
 
-patch fix.
+- `drift.style.line-length` counted bytes, not codepoints
 
-## [0.14.4] — 2026-03-30
+## [0.14.17] — 2026-03-30
 
-patch fix.
+### fixed
 
-## [0.14.3] — 2026-03-29
+- `drift.conventions.plural-table-name` fired on names ending in `_data`
 
-patch fix.
+## [0.14.16] — 2026-03-30
 
-## [0.14.2] — 2026-03-29
+### fixed
 
-patch fix.
+- `drift.correctness.null-equality` skipped `!=` (only caught `=` and `<>`)
 
-## [0.14.1] — 2026-03-28
+## [0.14.15] — 2026-03-29
 
-patch fix.
+### fixed
+
+- parallel file processing kept files open under a file-descriptor-limited ci runner
+
+## [0.14.14] — 2026-03-29
+
+### fixed
+
+- `drift format` added a final newline even to empty files
+
+## [0.14.13] — 2026-03-29
+
+### fixed
+
+- `drift.style.crlf` ran on stdin when stdin was already normalized
+
+## [0.14.12] — 2026-03-29
+
+### fixed
+
+- `drift.portability.backtick-quote` didn't fire on `CREATE TABLE` in ansi mode
+
+## [0.14.11] — 2026-03-28
+
+### fixed
+
+- release binary for aarch64-linux was missing; workflow matrix had a typo
+
+## [0.14.10] — 2026-03-28
+
+### fixed
+
+- `drift fix` could emit invalid utf-8 when a keyword fix collided with a multibyte identifier (overlap detection was off-by-one)
+
+## [0.14.9] — 2026-03-28
+
+### fixed
+
+- crash on zero-length files
+
+## [0.14.8] — 2026-03-28
+
+### fixed
+
+- `Severity::Off` wasn't being skipped in the lsp diagnostics path
+
+## [0.14.7] — 2026-03-28
+
+### fixed
+
+- wildcard config keys like `drift.style.*` took precedence over exact keys (now reversed, exact wins)
+
+## [0.14.6] — 2026-03-28
+
+### fixed
+
+- `drift explain` panicked on unknown rule id instead of printing a nice message
+
+## [0.14.5] — 2026-03-28
+
+### fixed
+
+- `drift rules --json` was emitting compact json, not pretty
+
+## [0.14.4] — 2026-03-28
+
+### fixed
+
+- readme link to rule docs was broken
+
+## [0.14.3] — 2026-03-28
+
+### fixed
+
+- `rayon` caused ordering flakiness in tests; now the output sorts by path then line
+
+## [0.14.2] — 2026-04-03
+
+### fixed
+
+- default severity of `drift.style.semicolon-terminator` was info; matches the docs now (warning)
+
+## [0.14.1] — 2026-04-01
+
+### fixed
+
+- `drift --version` printed a stale string on homebrew builds
 
 ## [0.14.0] — 2026-03-28
 
-tagged 0.14.0. see git log for the full span.
+### added
+
+- `drift explain <rule-id>` — full rule description, examples, and fix info
+- preset system via `drift.toml` `preset = "strict" | "warn" | "compat"`
+- `--format json` and `--format checkstyle` output for ci pipelines
+- `drift rules --json` for machine-readable rule listing
+
+### changed
+
+- rule ids normalized to `drift.<category>.<rule>` form. old `style.keyword_case` style ids no longer work; the migration is a find+replace in `drift.toml`.
+- `drift check` output colorizes severity labels by default (opt out with `--no-color`)
+
+### removed
+
+- the 0.13.x `[profile]` section of `drift.toml` in favor of `[drift] preset = ...`
 
 ## [0.13.0] — 2026-03-04
 
-tagged 0.13.0. see git log for the full span.
+### added
+
+- basic language server over stdio (`drift lsp`)
+- `textDocument/publishDiagnostics` from live rule output
+- code actions for auto-fixable style rules
+
+### known issues
+
+- lsp doesn't do hover or completion yet. that's the 0.15 goal.
 
 ## [0.12.0] — 2026-02-08
 
-tagged 0.12.0. see git log for the full span.
+### added
+
+- `drift fix` applies safe rewrites: keyword case, trailing whitespace, trailing newline, trailing semicolon
+- `drift fix --check` prints a unified diff without modifying files
+- `FixStats` struct exposed from the library for integrators
+
+### changed
+
+- `drift format` now layers on top of the fixer (keyword case + spacing around commas)
 
 ## [0.11.0] — 2026-01-14
 
-tagged 0.11.0. see git log for the full span.
+### added
+
+- ambiguity rules: `drift.ambiguity.reserved-as-identifier`, `.duplicate-alias`, `.unqualified-column`, `.mixed-bool`, `.same-name-fn-col`
+
+### fixed
+
+- `drift.correctness.self-join-no-alias` now walks joins correctly (was missing right-hand side)
 
 ## [0.10.0] — 2025-12-10
 
-tagged 0.10.0. see git log for the full span.
+### added
+
+- `drift format` subcommand (pipe-through formatter)
+- `[format]` section in `drift.toml`: `indent`, `max-line`, `keyword-case`
+
+### changed
+
+- token stream now preserves whitespace tokens, enabling comment-aware rules
 
 ## [0.9.0] — 2025-11-18
 
-tagged 0.9.0. see git log for the full span.
+### added
+
+- `bigquery` dialect (about 60% coverage)
+- partitioned-date heuristics in `drift.correctness.between-on-date`
 
 ## [0.8.0] — 2025-10-28
 
-tagged 0.8.0. see git log for the full span.
+### added
+
+- convention rules: snake_case tables, plural tables, lowercase columns, index naming, hungarian-notation check
 
 ## [0.7.0] — 2025-10-06
 
-tagged 0.7.0. see git log for the full span.
+### added
+
+- portability category
+- `drift.portability.backtick-quote`, `.on-duplicate-key`, `.top-vs-limit`, `.non-standard-type`, `.dialect-fn`, `.regex-op`
+- `--dialect` override flag
 
 ## [0.6.0] — 2025-09-09
 
-tagged 0.6.0. see git log for the full span.
+### added
+
+- security category: grant-all, plaintext-password, public-schema, dynamic-sql-concat, drop-without-if-exists, truncate-no-cascade
 
 ## [0.5.0] — 2025-08-14
 
-tagged 0.5.0. see git log for the full span.
+### added
+
+- sqlite dialect
+- `drift.correctness.distinct-on-no-order`
 
 ## [0.4.0] — 2025-07-22
 
-tagged 0.4.0. see git log for the full span.
+### added
+
+- mysql / mariadb dialect (merged)
+- backtick-quoted identifier handling
+- `drift.correctness.union-vs-union-all`
 
 ## [0.3.0] — 2025-06-18
 
-tagged 0.3.0. see git log for the full span.
+### added
+
+- performance category
+- `drift.performance.select-star`, `.like-leading-wildcard`, `.fn-on-column`, `.nested-subquery`, `.order-by-rand`, `.offset-paging`
 
 ## [0.2.0] — 2025-05-20
 
-tagged 0.2.0. see git log for the full span.
+### added
+
+- correctness rules: missing-where-update, missing-where-delete, cartesian-join, null-equality, div-zero-literal, order-by-ordinal, case-without-else
 
 ## [0.1.0] — 2025-04-15
 
-tagged 0.1.0. see git log for the full span.
+### added
 
-## [0.1.0] — 2025-04-15
-
-first tagged cut. postgres only. five style rules.
+- initial skeleton
+- postgres parser via sqlparser
+- five style rules: keyword-case, trailing-whitespace, trailing-newline, semicolon-terminator, indent
+- `drift check` subcommand

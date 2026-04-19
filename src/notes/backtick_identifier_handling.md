@@ -1,1 +1,0 @@
-- 2025-06-30: mysql: backtick identifier handling

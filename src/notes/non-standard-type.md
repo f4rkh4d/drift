@@ -1,1 +1,0 @@
-- 2025-09-22: rules/portability: non-standard-type

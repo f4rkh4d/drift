@@ -1,1 +1,0 @@
-- 2025-05-23: rules/performance: select-star

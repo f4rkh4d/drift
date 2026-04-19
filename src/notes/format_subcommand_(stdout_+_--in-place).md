@@ -1,1 +1,0 @@
-- 2025-12-04: cli: format subcommand (stdout + --in-place)

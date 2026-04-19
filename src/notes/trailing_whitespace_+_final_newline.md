@@ -1,1 +1,0 @@
-- 2026-01-22: fixer: trailing whitespace + final newline

@@ -1,1 +1,0 @@
-- 2026-03-18: report: json + checkstyle output

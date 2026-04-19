@@ -1,1 +1,0 @@
-- 2025-12-01: config: [format] section with indent + max-line

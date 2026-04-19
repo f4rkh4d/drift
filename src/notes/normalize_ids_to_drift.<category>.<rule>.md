@@ -1,1 +1,0 @@
-- 2026-03-20: rules: normalize ids to drift.<category>.<rule>

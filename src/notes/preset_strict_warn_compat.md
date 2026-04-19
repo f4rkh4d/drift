@@ -1,1 +1,0 @@
-- 2026-03-14: config: preset strict/warn/compat

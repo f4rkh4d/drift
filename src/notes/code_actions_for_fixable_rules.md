@@ -1,1 +1,0 @@
-- 2026-02-20: lsp: code actions for fixable rules

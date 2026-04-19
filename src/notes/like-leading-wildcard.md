@@ -1,1 +1,0 @@
-- 2025-05-28: rules/performance: like-leading-wildcard

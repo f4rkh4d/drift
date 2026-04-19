@@ -1,1 +1,0 @@
-- 2025-04-25: rules/correctness: missing-where-delete

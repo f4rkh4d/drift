@@ -1,1 +1,0 @@
-- 2025-05-15: docs: readme pitch sketch

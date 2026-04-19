@@ -1,1 +1,0 @@
-- 2025-08-17: rules/security: grant-all

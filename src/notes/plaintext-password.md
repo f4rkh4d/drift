@@ -1,1 +1,0 @@
-- 2025-08-23: rules/security: plaintext-password

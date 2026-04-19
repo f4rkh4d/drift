@@ -1,1 +1,0 @@
-- 2026-02-19: lsp: diagnostics via textDocument/didOpen,didChange

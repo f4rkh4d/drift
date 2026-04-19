@@ -1,1 +1,0 @@
-- 2026-02-02: cli: fix subcommand with --check diff

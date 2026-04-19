@@ -1,0 +1,15 @@
+# sample drift config. drop one at your repo root and drift walks up to find it.
+[drift]
+dialect = "postgres"
+preset  = "warn"
+
+[rules]
+"drift.correctness.*"             = "error"
+"drift.security.plaintext-password" = "error"
+"drift.performance.select-star"   = "warning"
+"drift.portability.*"             = "off"
+
+[format]
+indent       = 2
+max-line     = 100
+keyword-case = "upper"

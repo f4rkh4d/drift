@@ -1,1 +1,0 @@
-- 2025-08-25: rules/security: public-schema

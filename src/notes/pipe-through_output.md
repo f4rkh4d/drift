@@ -1,1 +1,0 @@
-- 2025-11-23: formatter: pipe-through output
