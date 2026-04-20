@@ -1,6 +1,6 @@
 # drift.style.identifier-case
 
-**identifier case**  —  category: `style`  severity: `info`  fixable: false
+**identifier case** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.identifier-case` for the interactive version.
 

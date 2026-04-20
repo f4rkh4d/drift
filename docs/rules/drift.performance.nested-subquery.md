@@ -1,6 +1,6 @@
 # drift.performance.nested-subquery
 
-**nested subquery**  —  category: `performance`  severity: `info`  fixable: false
+**nested subquery** .  category: `performance`  severity: `info`  fixable: false
 
 run `drift explain drift.performance.nested-subquery` for the interactive version.
 

@@ -1,6 +1,6 @@
 # drift.correctness.union-vs-union-all
 
-**UNION vs UNION ALL**  —  category: `correctness`  severity: `info`  fixable: false
+**UNION vs UNION ALL** .  category: `correctness`  severity: `info`  fixable: false
 
 run `drift explain drift.correctness.union-vs-union-all` for the interactive version.
 

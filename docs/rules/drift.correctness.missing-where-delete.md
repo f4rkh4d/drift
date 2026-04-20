@@ -1,6 +1,6 @@
 # drift.correctness.missing-where-delete
 
-**DELETE without WHERE**  —  category: `correctness`  severity: `error`  fixable: false
+**DELETE without WHERE** .  category: `correctness`  severity: `error`  fixable: false
 
 run `drift explain drift.correctness.missing-where-delete` for the interactive version.
 

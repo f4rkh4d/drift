@@ -1,6 +1,6 @@
 # drift.style.crlf
 
-**crlf line endings**  —  category: `style`  severity: `info`  fixable: false
+**crlf line endings** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.crlf` for the interactive version.
 

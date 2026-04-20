@@ -1,6 +1,6 @@
 # drift.conventions.pk-column-id
 
-**primary key column name**  —  category: `conventions`  severity: `info`  fixable: false
+**primary key column name** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.pk-column-id` for the interactive version.
 

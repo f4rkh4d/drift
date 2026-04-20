@@ -1,6 +1,6 @@
 # drift.style.trailing-newline
 
-**final newline**  —  category: `style`  severity: `info`  fixable: true
+**final newline** .  category: `style`  severity: `info`  fixable: true
 
 run `drift explain drift.style.trailing-newline` for the interactive version.
 

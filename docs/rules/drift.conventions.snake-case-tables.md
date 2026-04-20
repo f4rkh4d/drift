@@ -1,6 +1,6 @@
 # drift.conventions.snake-case-tables
 
-**snake_case tables**  —  category: `conventions`  severity: `info`  fixable: false
+**snake_case tables** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.snake-case-tables` for the interactive version.
 

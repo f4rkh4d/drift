@@ -1,6 +1,6 @@
 # drift.style.empty-file
 
-**empty file**  —  category: `style`  severity: `info`  fixable: false
+**empty file** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.empty-file` for the interactive version.
 

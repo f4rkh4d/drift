@@ -1,6 +1,6 @@
 # drift.style.space-before-comma
 
-**space before comma**  —  category: `style`  severity: `info`  fixable: false
+**space before comma** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.space-before-comma` for the interactive version.
 

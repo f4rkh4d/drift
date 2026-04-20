@@ -1,6 +1,6 @@
 # drift.ambiguity.reserved-as-identifier
 
-**reserved keyword as identifier**  —  category: `ambiguity`  severity: `warning`  fixable: false
+**reserved keyword as identifier** .  category: `ambiguity`  severity: `warning`  fixable: false
 
 run `drift explain drift.ambiguity.reserved-as-identifier` for the interactive version.
 

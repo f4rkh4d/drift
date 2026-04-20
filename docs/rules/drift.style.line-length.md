@@ -1,6 +1,6 @@
 # drift.style.line-length
 
-**line length**  —  category: `style`  severity: `info`  fixable: false
+**line length** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.line-length` for the interactive version.
 

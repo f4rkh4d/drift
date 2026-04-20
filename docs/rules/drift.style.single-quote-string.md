@@ -1,6 +1,6 @@
 # drift.style.single-quote-string
 
-**single-quoted string literals**  —  category: `style`  severity: `warning`  fixable: false
+**single-quoted string literals** .  category: `style`  severity: `warning`  fixable: false
 
 run `drift explain drift.style.single-quote-string` for the interactive version.
 

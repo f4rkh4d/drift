@@ -1,6 +1,6 @@
 # drift.portability.pg-limit-offset
 
-**LIMIT n OFFSET m**  —  category: `portability`  severity: `info`  fixable: false
+**LIMIT n OFFSET m** .  category: `portability`  severity: `info`  fixable: false
 
 run `drift explain drift.portability.pg-limit-offset` for the interactive version.
 

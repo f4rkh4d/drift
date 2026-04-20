@@ -1,6 +1,6 @@
 # drift.ambiguity.same-name-fn-col
 
-**function name collides with column name**  —  category: `ambiguity`  severity: `info`  fixable: false
+**function name collides with column name** .  category: `ambiguity`  severity: `info`  fixable: false
 
 run `drift explain drift.ambiguity.same-name-fn-col` for the interactive version.
 

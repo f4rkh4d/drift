@@ -1,6 +1,6 @@
 # drift.style.semicolon-terminator
 
-**semicolon terminator**  —  category: `style`  severity: `warning`  fixable: true
+**semicolon terminator** .  category: `style`  severity: `warning`  fixable: true
 
 run `drift explain drift.style.semicolon-terminator` for the interactive version.
 

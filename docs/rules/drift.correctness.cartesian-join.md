@@ -1,6 +1,6 @@
 # drift.correctness.cartesian-join
 
-**probable cartesian product**  —  category: `correctness`  severity: `warning`  fixable: false
+**probable cartesian product** .  category: `correctness`  severity: `warning`  fixable: false
 
 run `drift explain drift.correctness.cartesian-join` for the interactive version.
 

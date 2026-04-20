@@ -1,6 +1,6 @@
 # drift.correctness.self-join-no-alias
 
-**self-join without alias**  —  category: `correctness`  severity: `error`  fixable: false
+**self-join without alias** .  category: `correctness`  severity: `error`  fixable: false
 
 run `drift explain drift.correctness.self-join-no-alias` for the interactive version.
 

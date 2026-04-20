@@ -1,6 +1,6 @@
 # drift.style.indent
 
-**indent width**  —  category: `style`  severity: `info`  fixable: false
+**indent width** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.indent` for the interactive version.
 

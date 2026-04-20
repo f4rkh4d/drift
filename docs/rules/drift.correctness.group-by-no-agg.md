@@ -1,6 +1,6 @@
 # drift.correctness.group-by-no-agg
 
-**GROUP BY with no aggregation**  —  category: `correctness`  severity: `info`  fixable: false
+**GROUP BY with no aggregation** .  category: `correctness`  severity: `info`  fixable: false
 
 run `drift explain drift.correctness.group-by-no-agg` for the interactive version.
 

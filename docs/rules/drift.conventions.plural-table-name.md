@@ -1,6 +1,6 @@
 # drift.conventions.plural-table-name
 
-**plural table names**  —  category: `conventions`  severity: `info`  fixable: false
+**plural table names** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.plural-table-name` for the interactive version.
 

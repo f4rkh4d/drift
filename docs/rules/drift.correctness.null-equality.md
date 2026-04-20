@@ -1,6 +1,6 @@
 # drift.correctness.null-equality
 
-**= NULL instead of IS NULL**  —  category: `correctness`  severity: `error`  fixable: false
+**= NULL instead of IS NULL** .  category: `correctness`  severity: `error`  fixable: false
 
 run `drift explain drift.correctness.null-equality` for the interactive version.
 

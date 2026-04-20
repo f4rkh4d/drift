@@ -1,6 +1,6 @@
 # drift.correctness.order-by-ordinal
 
-**ORDER BY ordinal**  —  category: `correctness`  severity: `warning`  fixable: false
+**ORDER BY ordinal** .  category: `correctness`  severity: `warning`  fixable: false
 
 run `drift explain drift.correctness.order-by-ordinal` for the interactive version.
 

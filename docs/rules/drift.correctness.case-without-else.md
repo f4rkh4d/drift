@@ -1,6 +1,6 @@
 # drift.correctness.case-without-else
 
-**CASE without ELSE**  —  category: `correctness`  severity: `info`  fixable: false
+**CASE without ELSE** .  category: `correctness`  severity: `info`  fixable: false
 
 run `drift explain drift.correctness.case-without-else` for the interactive version.
 

@@ -1,6 +1,6 @@
 # drift.style.space-after-comma
 
-**space after comma**  —  category: `style`  severity: `info`  fixable: false
+**space after comma** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.space-after-comma` for the interactive version.
 

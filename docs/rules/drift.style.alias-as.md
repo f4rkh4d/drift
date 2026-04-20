@@ -1,6 +1,6 @@
 # drift.style.alias-as
 
-**explicit AS for column aliases**  —  category: `style`  severity: `info`  fixable: false
+**explicit AS for column aliases** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.alias-as` for the interactive version.
 

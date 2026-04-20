@@ -1,6 +1,6 @@
 # drift.performance.select-star
 
-**SELECT ***  —  category: `performance`  severity: `warning`  fixable: false
+**SELECT *** .  category: `performance`  severity: `warning`  fixable: false
 
 run `drift explain drift.performance.select-star` for the interactive version.
 

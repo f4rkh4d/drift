@@ -1,6 +1,6 @@
 # drift.portability.dialect-fn
 
-**dialect-only function**  —  category: `portability`  severity: `info`  fixable: false
+**dialect-only function** .  category: `portability`  severity: `info`  fixable: false
 
 run `drift explain drift.portability.dialect-fn` for the interactive version.
 

@@ -1,6 +1,6 @@
 # drift.portability.on-duplicate-key
 
-**ON DUPLICATE KEY UPDATE**  —  category: `portability`  severity: `info`  fixable: false
+**ON DUPLICATE KEY UPDATE** .  category: `portability`  severity: `info`  fixable: false
 
 run `drift explain drift.portability.on-duplicate-key` for the interactive version.
 

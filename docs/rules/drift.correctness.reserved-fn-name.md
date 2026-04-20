@@ -1,6 +1,6 @@
 # drift.correctness.reserved-fn-name
 
-**function declared with reserved name**  —  category: `correctness`  severity: `warning`  fixable: false
+**function declared with reserved name** .  category: `correctness`  severity: `warning`  fixable: false
 
 run `drift explain drift.correctness.reserved-fn-name` for the interactive version.
 

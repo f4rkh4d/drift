@@ -1,6 +1,6 @@
 # drift.portability.backtick-quote
 
-**backtick identifier**  —  category: `portability`  severity: `warning`  fixable: false
+**backtick identifier** .  category: `portability`  severity: `warning`  fixable: false
 
 run `drift explain drift.portability.backtick-quote` for the interactive version.
 

@@ -1,6 +1,6 @@
 # drift.style.tab-indent
 
-**tab indent**  —  category: `style`  severity: `info`  fixable: false
+**tab indent** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.tab-indent` for the interactive version.
 

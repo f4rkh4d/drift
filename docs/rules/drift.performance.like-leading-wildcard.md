@@ -1,6 +1,6 @@
 # drift.performance.like-leading-wildcard
 
-**LIKE with leading %**  —  category: `performance`  severity: `warning`  fixable: false
+**LIKE with leading %** .  category: `performance`  severity: `warning`  fixable: false
 
 run `drift explain drift.performance.like-leading-wildcard` for the interactive version.
 

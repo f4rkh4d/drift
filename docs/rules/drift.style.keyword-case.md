@@ -1,6 +1,6 @@
 # drift.style.keyword-case
 
-**keyword case**  —  category: `style`  severity: `warning`  fixable: true
+**keyword case** .  category: `style`  severity: `warning`  fixable: true
 
 run `drift explain drift.style.keyword-case` for the interactive version.
 

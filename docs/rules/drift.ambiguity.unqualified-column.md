@@ -1,6 +1,6 @@
 # drift.ambiguity.unqualified-column
 
-**unqualified column in joined query**  —  category: `ambiguity`  severity: `info`  fixable: false
+**unqualified column in joined query** .  category: `ambiguity`  severity: `info`  fixable: false
 
 run `drift explain drift.ambiguity.unqualified-column` for the interactive version.
 

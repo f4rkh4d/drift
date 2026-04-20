@@ -1,6 +1,6 @@
 # drift.correctness.div-zero-literal
 
-**literal division by zero**  —  category: `correctness`  severity: `error`  fixable: false
+**literal division by zero** .  category: `correctness`  severity: `error`  fixable: false
 
 run `drift explain drift.correctness.div-zero-literal` for the interactive version.
 

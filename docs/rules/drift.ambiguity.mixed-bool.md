@@ -1,6 +1,6 @@
 # drift.ambiguity.mixed-bool
 
-**inconsistent TRUE/FALSE casing**  —  category: `ambiguity`  severity: `info`  fixable: false
+**inconsistent TRUE/FALSE casing** .  category: `ambiguity`  severity: `info`  fixable: false
 
 run `drift explain drift.ambiguity.mixed-bool` for the interactive version.
 

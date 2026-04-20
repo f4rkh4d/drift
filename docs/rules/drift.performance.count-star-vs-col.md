@@ -1,6 +1,6 @@
 # drift.performance.count-star-vs-col
 
-**COUNT(column) vs COUNT(*)**  —  category: `performance`  severity: `info`  fixable: false
+**COUNT(column) vs COUNT(*)** .  category: `performance`  severity: `info`  fixable: false
 
 run `drift explain drift.performance.count-star-vs-col` for the interactive version.
 

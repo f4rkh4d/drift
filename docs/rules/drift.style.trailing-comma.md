@@ -1,6 +1,6 @@
 # drift.style.trailing-comma
 
-**trailing comma in select list**  —  category: `style`  severity: `warning`  fixable: false
+**trailing comma in select list** .  category: `style`  severity: `warning`  fixable: false
 
 run `drift explain drift.style.trailing-comma` for the interactive version.
 

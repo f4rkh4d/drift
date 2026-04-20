@@ -1,6 +1,6 @@
 # drift.correctness.missing-where-update
 
-**UPDATE without WHERE**  —  category: `correctness`  severity: `error`  fixable: false
+**UPDATE without WHERE** .  category: `correctness`  severity: `error`  fixable: false
 
 run `drift explain drift.correctness.missing-where-update` for the interactive version.
 

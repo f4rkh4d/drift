@@ -1,6 +1,6 @@
 # drift.portability.non-standard-type
 
-**non-standard type**  —  category: `portability`  severity: `info`  fixable: false
+**non-standard type** .  category: `portability`  severity: `info`  fixable: false
 
 run `drift explain drift.portability.non-standard-type` for the interactive version.
 

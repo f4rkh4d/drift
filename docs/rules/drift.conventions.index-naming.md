@@ -1,6 +1,6 @@
 # drift.conventions.index-naming
 
-**index naming**  —  category: `conventions`  severity: `info`  fixable: false
+**index naming** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.index-naming` for the interactive version.
 

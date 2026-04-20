@@ -1,6 +1,6 @@
 # drift.style.leading-comma
 
-**leading commas**  —  category: `style`  severity: `info`  fixable: false
+**leading commas** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.leading-comma` for the interactive version.
 

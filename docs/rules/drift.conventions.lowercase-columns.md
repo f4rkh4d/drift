@@ -1,6 +1,6 @@
 # drift.conventions.lowercase-columns
 
-**lowercase column names**  —  category: `conventions`  severity: `info`  fixable: false
+**lowercase column names** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.lowercase-columns` for the interactive version.
 

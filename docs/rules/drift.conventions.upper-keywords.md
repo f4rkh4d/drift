@@ -1,6 +1,6 @@
 # drift.conventions.upper-keywords
 
-**uppercase keywords**  —  category: `conventions`  severity: `info`  fixable: false
+**uppercase keywords** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.upper-keywords` for the interactive version.
 

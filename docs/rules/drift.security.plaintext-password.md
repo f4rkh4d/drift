@@ -1,6 +1,6 @@
 # drift.security.plaintext-password
 
-**plaintext password literal**  —  category: `security`  severity: `error`  fixable: false
+**plaintext password literal** .  category: `security`  severity: `error`  fixable: false
 
 run `drift explain drift.security.plaintext-password` for the interactive version.
 

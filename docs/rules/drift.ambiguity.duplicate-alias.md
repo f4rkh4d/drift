@@ -1,6 +1,6 @@
 # drift.ambiguity.duplicate-alias
 
-**duplicate alias in same query**  —  category: `ambiguity`  severity: `error`  fixable: false
+**duplicate alias in same query** .  category: `ambiguity`  severity: `error`  fixable: false
 
 run `drift explain drift.ambiguity.duplicate-alias` for the interactive version.
 

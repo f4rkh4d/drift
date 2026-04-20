@@ -1,6 +1,6 @@
 # drift.correctness.duplicate-column
 
-**duplicate column in select**  —  category: `correctness`  severity: `warning`  fixable: false
+**duplicate column in select** .  category: `correctness`  severity: `warning`  fixable: false
 
 run `drift explain drift.correctness.duplicate-column` for the interactive version.
 

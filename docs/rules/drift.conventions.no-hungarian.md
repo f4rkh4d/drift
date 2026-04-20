@@ -1,6 +1,6 @@
 # drift.conventions.no-hungarian
 
-**no hungarian notation**  —  category: `conventions`  severity: `info`  fixable: false
+**no hungarian notation** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.no-hungarian` for the interactive version.
 

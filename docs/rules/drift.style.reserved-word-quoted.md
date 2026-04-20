@@ -1,6 +1,6 @@
 # drift.style.reserved-word-quoted
 
-**quoted reserved word identifier**  —  category: `style`  severity: `info`  fixable: false
+**quoted reserved word identifier** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.reserved-word-quoted` for the interactive version.
 

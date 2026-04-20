@@ -1,6 +1,6 @@
 # drift.portability.regex-op
 
-**regex operator**  —  category: `portability`  severity: `info`  fixable: false
+**regex operator** .  category: `portability`  severity: `info`  fixable: false
 
 run `drift explain drift.portability.regex-op` for the interactive version.
 

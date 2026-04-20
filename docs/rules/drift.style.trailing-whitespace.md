@@ -1,6 +1,6 @@
 # drift.style.trailing-whitespace
 
-**trailing whitespace**  —  category: `style`  severity: `info`  fixable: true
+**trailing whitespace** .  category: `style`  severity: `info`  fixable: true
 
 run `drift explain drift.style.trailing-whitespace` for the interactive version.
 

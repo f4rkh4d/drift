@@ -1,6 +1,6 @@
 # drift.security.grant-all
 
-**GRANT ALL**  —  category: `security`  severity: `warning`  fixable: false
+**GRANT ALL** .  category: `security`  severity: `warning`  fixable: false
 
 run `drift explain drift.security.grant-all` for the interactive version.
 

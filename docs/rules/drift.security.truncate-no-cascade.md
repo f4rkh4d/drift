@@ -1,6 +1,6 @@
 # drift.security.truncate-no-cascade
 
-**TRUNCATE without explicit cascade/restrict**  —  category: `security`  severity: `info`  fixable: false
+**TRUNCATE without explicit cascade/restrict** .  category: `security`  severity: `info`  fixable: false
 
 run `drift explain drift.security.truncate-no-cascade` for the interactive version.
 

@@ -1,6 +1,6 @@
 # drift.security.drop-without-if-exists
 
-**DROP without IF EXISTS**  —  category: `security`  severity: `info`  fixable: false
+**DROP without IF EXISTS** .  category: `security`  severity: `info`  fixable: false
 
 run `drift explain drift.security.drop-without-if-exists` for the interactive version.
 

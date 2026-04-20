@@ -1,6 +1,6 @@
 # drift.security.dynamic-sql-concat
 
-**dynamic sql concatenation marker**  —  category: `security`  severity: `warning`  fixable: false
+**dynamic sql concatenation marker** .  category: `security`  severity: `warning`  fixable: false
 
 run `drift explain drift.security.dynamic-sql-concat` for the interactive version.
 

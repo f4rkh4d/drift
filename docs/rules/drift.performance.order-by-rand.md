@@ -1,6 +1,6 @@
 # drift.performance.order-by-rand
 
-**ORDER BY random()**  —  category: `performance`  severity: `warning`  fixable: false
+**ORDER BY random()** .  category: `performance`  severity: `warning`  fixable: false
 
 run `drift explain drift.performance.order-by-rand` for the interactive version.
 

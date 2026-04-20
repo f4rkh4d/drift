@@ -1,6 +1,6 @@
 # drift.performance.fn-on-column
 
-**function on column in WHERE**  —  category: `performance`  severity: `info`  fixable: false
+**function on column in WHERE** .  category: `performance`  severity: `info`  fixable: false
 
 run `drift explain drift.performance.fn-on-column` for the interactive version.
 

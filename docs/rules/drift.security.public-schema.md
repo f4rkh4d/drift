@@ -1,6 +1,6 @@
 # drift.security.public-schema
 
-**write to public schema**  —  category: `security`  severity: `info`  fixable: false
+**write to public schema** .  category: `security`  severity: `info`  fixable: false
 
 run `drift explain drift.security.public-schema` for the interactive version.
 

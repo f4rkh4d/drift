@@ -1,6 +1,6 @@
 # drift.style.redundant-parens
 
-**redundant parentheses**  —  category: `style`  severity: `info`  fixable: false
+**redundant parentheses** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.redundant-parens` for the interactive version.
 

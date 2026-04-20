@@ -1,6 +1,6 @@
 # drift.style.double-blank-line
 
-**double blank line**  —  category: `style`  severity: `info`  fixable: false
+**double blank line** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.double-blank-line` for the interactive version.
 

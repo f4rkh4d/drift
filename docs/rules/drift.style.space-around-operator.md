@@ -1,6 +1,6 @@
 # drift.style.space-around-operator
 
-**space around operator**  —  category: `style`  severity: `info`  fixable: false
+**space around operator** .  category: `style`  severity: `info`  fixable: false
 
 run `drift explain drift.style.space-around-operator` for the interactive version.
 

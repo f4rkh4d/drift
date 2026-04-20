@@ -1,6 +1,6 @@
 # drift.portability.double-quote-ident
 
-**double-quoted identifier**  —  category: `portability`  severity: `info`  fixable: false
+**double-quoted identifier** .  category: `portability`  severity: `info`  fixable: false
 
 run `drift explain drift.portability.double-quote-ident` for the interactive version.
 

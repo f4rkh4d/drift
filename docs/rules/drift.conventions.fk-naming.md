@@ -1,6 +1,6 @@
 # drift.conventions.fk-naming
 
-**foreign key naming**  —  category: `conventions`  severity: `info`  fixable: false
+**foreign key naming** .  category: `conventions`  severity: `info`  fixable: false
 
 run `drift explain drift.conventions.fk-naming` for the interactive version.
 

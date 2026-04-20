@@ -1,6 +1,6 @@
 # drift.correctness.between-on-date
 
-**BETWEEN on dates is inclusive of the upper bound**  —  category: `correctness`  severity: `warning`  fixable: false
+**BETWEEN on dates is inclusive of the upper bound** .  category: `correctness`  severity: `warning`  fixable: false
 
 run `drift explain drift.correctness.between-on-date` for the interactive version.
 

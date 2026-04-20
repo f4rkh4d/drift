@@ -1,6 +1,6 @@
 # drift.performance.in-subquery-exists
 
-**IN (subquery) vs EXISTS**  —  category: `performance`  severity: `info`  fixable: false
+**IN (subquery) vs EXISTS** .  category: `performance`  severity: `info`  fixable: false
 
 run `drift explain drift.performance.in-subquery-exists` for the interactive version.
 

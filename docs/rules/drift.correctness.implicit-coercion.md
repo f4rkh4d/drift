@@ -1,6 +1,6 @@
 # drift.correctness.implicit-coercion
 
-**implicit type coercion**  —  category: `correctness`  severity: `warning`  fixable: false
+**implicit type coercion** .  category: `correctness`  severity: `warning`  fixable: false
 
 run `drift explain drift.correctness.implicit-coercion` for the interactive version.
 

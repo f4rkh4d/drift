@@ -40,11 +40,11 @@ any of them take `--dialect postgres|mysql|sqlite|bigquery|ansi`. when left unse
 
 ## dialects
 
-- **postgres** — primary. about 95% coverage in my test corpus.
-- **mysql / mariadb** — merged. around 80%. some of the wilder index hints don't parse.
-- **sqlite** — ~80%. `WITHOUT ROWID` works, `STRICT` is partial.
-- **bigquery** — ~60%. struct/array literals parse, scripting blocks (`DECLARE`/`BEGIN`) mostly don't.
-- **ansi** — baseline, for when you're writing for portability.
+- **postgres**. primary. about 95% coverage in my test corpus.
+- **mysql / mariadb**. merged. around 80%. some of the wilder index hints don't parse.
+- **sqlite**. ~80%. `WITHOUT ROWID` works, `STRICT` is partial.
+- **bigquery**. ~60%. struct/array literals parse, scripting blocks (`DECLARE`/`BEGIN`) mostly don't.
+- **ansi**. baseline, for when you're writing for portability.
 
 not shipped yet: tsql, snowflake, redshift, oracle. on the roadmap. if you only use those, drift won't help you today.
 
@@ -111,7 +111,7 @@ pgformatter is postgres-only, formatter-only. sqlfmt is postgres + dbt-flavored,
 
 vscode: there's no published extension yet. point a generic lsp client at `drift lsp`.
 
-helix — in `languages.toml`:
+helix. in `languages.toml`:
 
 ```toml
 [[language]]
