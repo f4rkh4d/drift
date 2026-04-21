@@ -20,6 +20,18 @@ fn select_star_flagged() {
 }
 
 #[test]
+fn explicit_columns_not_flagged() {
+    let ids = lint("SELECT id, name, email FROM users;\n");
+    assert!(!ids.iter().any(|i| i == "drift.performance.select-star"));
+}
+
+#[test]
+fn count_star_not_flagged() {
+    let ids = lint("SELECT count(*) FROM users;\n");
+    assert!(!ids.iter().any(|i| i == "drift.performance.select-star"));
+}
+
+#[test]
 fn leading_wildcard_flagged() {
     let ids = lint("SELECT 1 FROM t WHERE email LIKE '%@ex.com';\n");
     assert!(ids
