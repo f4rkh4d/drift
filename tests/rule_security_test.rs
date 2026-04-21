@@ -42,17 +42,23 @@ fn drop_without_if_exists_flagged() {
 #[test]
 fn select_into_outfile_flagged() {
     let ids = lint("SELECT name FROM users INTO OUTFILE '/tmp/x.txt';\n");
-    assert!(ids.iter().any(|i| i == "drift.security.select-into-outfile"));
+    assert!(ids
+        .iter()
+        .any(|i| i == "drift.security.select-into-outfile"));
 }
 
 #[test]
 fn select_into_dumpfile_flagged() {
     let ids = lint("SELECT data FROM blobs INTO DUMPFILE '/tmp/x.bin';\n");
-    assert!(ids.iter().any(|i| i == "drift.security.select-into-outfile"));
+    assert!(ids
+        .iter()
+        .any(|i| i == "drift.security.select-into-outfile"));
 }
 
 #[test]
 fn plain_select_not_flagged_as_outfile() {
     let ids = lint("SELECT id, name FROM users;\n");
-    assert!(!ids.iter().any(|i| i == "drift.security.select-into-outfile"));
+    assert!(!ids
+        .iter()
+        .any(|i| i == "drift.security.select-into-outfile"));
 }
