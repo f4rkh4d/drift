@@ -12,6 +12,7 @@ pub fn register(out: &mut Vec<Box<dyn Rule>>) {
     out.push(Box::new(DynamicSqlConcat));
     out.push(Box::new(DropWithoutIfExists));
     out.push(Box::new(TruncateNoCascade));
+    out.push(Box::new(SelectIntoOutfile));
 }
 
 pub struct GrantAll;
@@ -251,5 +252,43 @@ impl Rule for TruncateNoCascade {
             }];
         }
         Vec::new()
+    }
+}
+
+pub struct SelectIntoOutfile;
+impl Rule for SelectIntoOutfile {
+    fn id(&self) -> &'static str {
+        "drift.security.select-into-outfile"
+    }
+    fn name(&self) -> &'static str {
+        "SELECT ... INTO OUTFILE / DUMPFILE"
+    }
+    fn category(&self) -> Category {
+        Category::Security
+    }
+    fn default_severity(&self) -> Severity {
+        Severity::Error
+    }
+    fn description(&self) -> &'static str {
+        "MySQL SELECT INTO OUTFILE/DUMPFILE writes to the server filesystem. often abused for SQLi-to-RCE pivots and leaks data outside DB access control."
+    }
+    fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
+        let lower = p.source.to_lowercase();
+        let mut out = Vec::new();
+        for pat in &["into outfile", "into dumpfile"] {
+            if let Some(idx) = lower.find(pat) {
+                let (line, col) = p.line_col(idx);
+                out.push(Violation {
+                    rule_id: self.id(),
+                    severity: self.default_severity(),
+                    message: "SELECT INTO OUTFILE/DUMPFILE writes files on the db server; disallow in migrations".into(),
+                    line,
+                    col,
+                    span: None,
+                    fix: None,
+                });
+            }
+        }
+        out
     }
 }
