@@ -161,3 +161,7 @@ require('lspconfig').drift.setup{}
 ## license
 
 MIT. see LICENSE.
+
+## reporting bugs
+
+open an issue at [github.com/f4rkh4d/drift/issues](https://github.com/f4rkh4d/drift/issues) with a minimal reproduction.
