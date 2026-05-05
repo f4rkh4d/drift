@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use sqlparser::dialect::{
     AnsiDialect, BigQueryDialect, Dialect as SqlDialect, GenericDialect, MySqlDialect,
-    PostgreSqlDialect, SQLiteDialect,
+    PostgreSqlDialect, SQLiteDialect, SnowflakeDialect,
 };
 use std::path::Path;
 use std::str::FromStr;
@@ -15,6 +15,7 @@ pub enum Dialect {
     MySql,
     Sqlite,
     BigQuery,
+    Snowflake,
     #[default]
     Ansi,
 }
@@ -26,6 +27,7 @@ impl Dialect {
             Dialect::MySql => Box::new(MySqlDialect {}),
             Dialect::Sqlite => Box::new(SQLiteDialect {}),
             Dialect::BigQuery => Box::new(BigQueryDialect {}),
+            Dialect::Snowflake => Box::new(SnowflakeDialect {}),
             Dialect::Ansi => Box::new(AnsiDialect {}),
         }
     }
@@ -42,6 +44,7 @@ impl Dialect {
             "mysql" | "mariadb" => Some(Dialect::MySql),
             "sqlite" | "sqlite3" => Some(Dialect::Sqlite),
             "bq" | "bigquery" => Some(Dialect::BigQuery),
+            "snowflake" | "snowsql" => Some(Dialect::Snowflake),
             _ => None,
         }
     }
@@ -52,6 +55,7 @@ impl Dialect {
             Dialect::MySql => "mysql",
             Dialect::Sqlite => "sqlite",
             Dialect::BigQuery => "bigquery",
+            Dialect::Snowflake => "snowflake",
             Dialect::Ansi => "ansi",
         }
     }
@@ -65,6 +69,7 @@ impl FromStr for Dialect {
             "mysql" | "mariadb" => Ok(Dialect::MySql),
             "sqlite" | "sqlite3" => Ok(Dialect::Sqlite),
             "bigquery" | "bq" => Ok(Dialect::BigQuery),
+            "snowflake" | "snowsql" | "sf" => Ok(Dialect::Snowflake),
             "ansi" | "standard" => Ok(Dialect::Ansi),
             other => Err(format!("unknown dialect: {other}")),
         }
@@ -85,6 +90,14 @@ mod tests {
             Dialect::detect_from_path(Path::new("q.mysql")),
             Some(Dialect::MySql)
         );
+        assert_eq!(
+            Dialect::detect_from_path(Path::new("q.snowflake")),
+            Some(Dialect::Snowflake)
+        );
+        assert_eq!(
+            Dialect::detect_from_path(Path::new("q.snowsql")),
+            Some(Dialect::Snowflake)
+        );
         assert_eq!(Dialect::detect_from_path(Path::new("q.sql")), None);
     }
 
@@ -92,6 +105,22 @@ mod tests {
     fn parses_from_string() {
         assert_eq!("postgres".parse::<Dialect>().unwrap(), Dialect::Postgres);
         assert_eq!("bq".parse::<Dialect>().unwrap(), Dialect::BigQuery);
+        assert_eq!("snowflake".parse::<Dialect>().unwrap(), Dialect::Snowflake);
+        assert_eq!("sf".parse::<Dialect>().unwrap(), Dialect::Snowflake);
         assert!("oracle".parse::<Dialect>().is_err());
+    }
+
+    #[test]
+    fn snowflake_parses_lateral_flatten() {
+        // canary: snowflake's `LATERAL FLATTEN(input => col)` is the kind of
+        // syntax that the postgres parser rejects. drift should accept it
+        // when the dialect is snowflake.
+        use crate::parse::parse;
+        let sql = "SELECT value FROM t, LATERAL FLATTEN(input => t.arr);";
+        let parsed = parse(sql, Dialect::Snowflake);
+        assert!(
+            !parsed.statements.is_empty(),
+            "snowflake parser should accept LATERAL FLATTEN"
+        );
     }
 }

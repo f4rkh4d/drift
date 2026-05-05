@@ -52,6 +52,9 @@ pub enum Cmd {
         /// `--baseline .drift-baseline.json`.
         #[arg(long)]
         baseline: Option<PathBuf>,
+        /// re-run the check whenever a file under the given paths changes
+        #[arg(long)]
+        watch: bool,
     },
     /// apply safe auto-fixes
     Fix {
@@ -80,6 +83,30 @@ pub enum Cmd {
     Baseline {
         #[command(subcommand)]
         sub: BaselineSub,
+    },
+    /// run a check and aggregate the results: which rules fire most, where
+    /// the noise lives, what to consider disabling. emits a recommended
+    /// drift.toml fragment at the end.
+    Profile {
+        files: Vec<PathBuf>,
+        /// how many top-firing rules to show
+        #[arg(long, default_value = "20")]
+        top: usize,
+        /// output as JSON for further processing
+        #[arg(long)]
+        json: bool,
+    },
+    /// generate per-rule markdown pages into docs/rules/. each page is
+    /// derived from the rule trait (id, category, severity, description,
+    /// example_bad, example_good) so docs cannot drift from the code.
+    Docs {
+        /// output directory (default: docs/rules)
+        #[arg(long, default_value = "docs/rules")]
+        output: PathBuf,
+        /// fail with non-zero exit code if any generated page differs
+        /// from the file currently on disk. for ci.
+        #[arg(long)]
+        check: bool,
     },
 }
 
@@ -113,15 +140,29 @@ pub fn run(cli: Cli) -> Result<i32> {
             stdin,
             fail_on,
             baseline,
-        } => cmd_check(
-            &cfg,
-            &files,
-            &fmt,
-            stdin,
-            !cli.no_color,
-            &fail_on,
-            baseline.as_deref(),
-        ),
+            watch,
+        } => {
+            if watch {
+                cmd_check_watch(
+                    &cfg,
+                    &files,
+                    &fmt,
+                    !cli.no_color,
+                    &fail_on,
+                    baseline.as_deref(),
+                )
+            } else {
+                cmd_check(
+                    &cfg,
+                    &files,
+                    &fmt,
+                    stdin,
+                    !cli.no_color,
+                    &fail_on,
+                    baseline.as_deref(),
+                )
+            }
+        }
         Cmd::Fix { files, check } => cmd_fix(&cfg, &files, check),
         Cmd::Format { files, in_place } => cmd_format(&cfg, &files, in_place),
         Cmd::Lsp => {
@@ -134,6 +175,8 @@ pub fn run(cli: Cli) -> Result<i32> {
             BaselineSub::Create { files, output } => cmd_baseline_create(&cfg, &files, &output),
             BaselineSub::Show { path } => cmd_baseline_show(&path),
         },
+        Cmd::Profile { files, top, json } => cmd_profile(&cfg, &files, top, json),
+        Cmd::Docs { output, check } => cmd_docs(&output, check),
     }
 }
 
@@ -162,7 +205,7 @@ fn expand(files: &[PathBuf]) -> Vec<PathBuf> {
                 }
             }
         } else if f.is_dir() {
-            for ext in &["sql", "pgsql", "mysql", "sqlite"] {
+            for ext in &["sql", "pgsql", "mysql", "sqlite", "snowflake", "snowsql"] {
                 let pat = format!("{}/**/*.{}", s, ext);
                 if let Ok(iter) = glob::glob(&pat) {
                     for entry in iter.flatten() {
@@ -499,6 +542,305 @@ fn cmd_rules(json: bool) -> Result<i32> {
                 );
             }
         }
+    }
+    Ok(0)
+}
+
+/// re-run `drift check` whenever a file under `paths` changes. uses
+/// notify-debouncer-mini so a flurry of editor saves coalesces into a single
+/// re-lint within ~250 ms instead of once-per-fsync.
+fn cmd_check_watch(
+    cfg: &Config,
+    files: &[PathBuf],
+    fmt: &str,
+    color: bool,
+    fail_on: &str,
+    baseline_path: Option<&Path>,
+) -> Result<i32> {
+    use notify_debouncer_mini::{new_debouncer, notify::RecursiveMode};
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    // print once eagerly so the first run lands without waiting on a file event.
+    let _ = cmd_check(cfg, files, fmt, false, color, fail_on, baseline_path);
+    eprintln!("\ndrift: watching for changes (ctrl-c to stop)");
+
+    let watch_paths: Vec<PathBuf> = if files.is_empty() {
+        vec![PathBuf::from(".")]
+    } else {
+        files.to_vec()
+    };
+
+    let (tx, rx) = mpsc::channel();
+    let mut debouncer = new_debouncer(Duration::from_millis(250), move |res| {
+        let _ = tx.send(res);
+    })?;
+    for p in &watch_paths {
+        let target = if p.is_dir() {
+            p.clone()
+        } else {
+            PathBuf::from(p.parent().unwrap_or(Path::new(".")))
+        };
+        let _ = debouncer.watcher().watch(&target, RecursiveMode::Recursive);
+    }
+
+    loop {
+        match rx.recv() {
+            Ok(Ok(events)) => {
+                let touched_sql = events.iter().any(|e| {
+                    e.path
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .map(|ext| {
+                            matches!(
+                                ext,
+                                "sql" | "pgsql" | "mysql" | "sqlite" | "snowflake" | "snowsql"
+                            )
+                        })
+                        .unwrap_or(false)
+                });
+                if !touched_sql {
+                    continue;
+                }
+                println!();
+                let _ = cmd_check(cfg, files, fmt, false, color, fail_on, baseline_path);
+                eprintln!("drift: watching for changes (ctrl-c to stop)");
+            }
+            Ok(Err(e)) => {
+                eprintln!("drift: watch error: {e}");
+            }
+            Err(_) => break, // channel closed
+        }
+    }
+    Ok(0)
+}
+
+/// `drift profile` — aggregate violations by rule across a corpus.
+/// the use case is "drift just emitted 4000 warnings, what's the noise floor
+/// and what could i disable?". prints a top-N table and a drift.toml fragment
+/// so adoption is one paste away.
+fn cmd_profile(cfg: &Config, files: &[PathBuf], top: usize, json: bool) -> Result<i32> {
+    use std::collections::BTreeMap;
+
+    let registry = Registry::new();
+    let files = expand(files);
+    if files.is_empty() {
+        eprintln!("no files matched");
+        return Ok(0);
+    }
+
+    let started = std::time::Instant::now();
+    let results: Vec<Vec<crate::Violation>> = files
+        .par_iter()
+        .filter_map(|path| {
+            let src = std::fs::read_to_string(path).ok()?;
+            let dialect = pick_dialect(cfg, path);
+            let parsed = parse(&src, dialect);
+            Some(registry.run(&parsed, cfg))
+        })
+        .collect();
+    let elapsed_ms = started.elapsed().as_millis();
+
+    let mut counts: BTreeMap<&'static str, (usize, Severity)> = BTreeMap::new();
+    let mut total = 0usize;
+    let mut by_severity: BTreeMap<&'static str, usize> = BTreeMap::new();
+    for viols in &results {
+        for v in viols {
+            counts
+                .entry(v.rule_id)
+                .and_modify(|e| e.0 += 1)
+                .or_insert((1, v.severity));
+            total += 1;
+            *by_severity.entry(v.severity.as_str()).or_insert(0) += 1;
+        }
+    }
+
+    let mut rows: Vec<(&'static str, usize, Severity)> =
+        counts.into_iter().map(|(k, (n, s))| (k, n, s)).collect();
+    rows.sort_by_key(|r| std::cmp::Reverse(r.1));
+
+    if json {
+        #[derive(serde::Serialize)]
+        struct Row {
+            rule: &'static str,
+            count: usize,
+            severity: &'static str,
+        }
+        let out: Vec<Row> = rows
+            .iter()
+            .take(top)
+            .map(|(r, n, s)| Row {
+                rule: r,
+                count: *n,
+                severity: s.as_str(),
+            })
+            .collect();
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "files": files.len(),
+                "elapsed_ms": elapsed_ms,
+                "total_violations": total,
+                "by_severity": by_severity,
+                "top_rules": out,
+            }))
+            .unwrap()
+        );
+        return Ok(0);
+    }
+
+    println!("scanned {} files in {} ms", files.len(), elapsed_ms);
+    println!("total violations: {total}");
+    if !by_severity.is_empty() {
+        let parts: Vec<String> = by_severity
+            .iter()
+            .map(|(k, v)| format!("{v} {k}"))
+            .collect();
+        println!("by severity:     {}", parts.join(", "));
+    }
+    println!();
+
+    if rows.is_empty() {
+        println!("nothing to profile.");
+        return Ok(0);
+    }
+
+    println!("top {} rules:", rows.len().min(top));
+    println!("  count  severity    rule");
+    for (rule, n, sev) in rows.iter().take(top) {
+        println!("  {:>5}  {:<10}  {}", n, sev.as_str(), rule);
+    }
+
+    // suggest a drift.toml block. anything firing >5% of total goes to a
+    // "noisy, consider warning instead of error" pile. zero-firing rules
+    // are silent (no recommendation; their default may still be useful).
+    let noisy_threshold = (total / 20).max(20);
+    let noisy: Vec<_> = rows
+        .iter()
+        .filter(|(_, n, s)| *n >= noisy_threshold && matches!(s, Severity::Error))
+        .collect();
+    if !noisy.is_empty() {
+        println!();
+        println!("suggested drift.toml (rules above 5% of all hits, demoted to warning):");
+        println!();
+        println!("  [rules]");
+        for (rule, n, _) in &noisy {
+            println!(r#"  "{rule}" = "warning"   # {n} hits"#);
+        }
+    }
+
+    Ok(0)
+}
+
+/// `drift docs [--check]` — write one markdown page per rule into the output
+/// directory, derived 1:1 from the Rule trait. `--check` makes the command
+/// fail with non-zero exit if any file on disk differs from what would be
+/// generated, so ci can fence the docs against drift in either direction.
+fn cmd_docs(output: &Path, check: bool) -> Result<i32> {
+    use std::fmt::Write as _;
+
+    let registry = Registry::new();
+    let rules = registry.rules();
+    std::fs::create_dir_all(output)?;
+
+    let mut differing = 0usize;
+    let mut written = 0usize;
+
+    for rule in rules.iter() {
+        let mut md = String::new();
+        let id = rule.id();
+        let _ = writeln!(md, "# `{id}`");
+        let _ = writeln!(md);
+        let _ = writeln!(
+            md,
+            "| field    | value |\n|----------|-------|\n| category | `{}` |\n| default  | `{}` |\n| fixable  | `{}` |",
+            rule.category().as_str(),
+            rule.default_severity().as_str(),
+            if rule.fixable() { "yes" } else { "no" },
+        );
+        let _ = writeln!(md);
+        let _ = writeln!(md, "## what");
+        let _ = writeln!(md);
+        let _ = writeln!(md, "{}", rule.description().trim());
+        let _ = writeln!(md);
+        if !rule.example_bad().is_empty() {
+            let _ = writeln!(md, "## bad");
+            let _ = writeln!(md);
+            let _ = writeln!(md, "```sql");
+            let _ = writeln!(md, "{}", rule.example_bad().trim_end());
+            let _ = writeln!(md, "```");
+            let _ = writeln!(md);
+        }
+        if !rule.example_good().is_empty() {
+            let _ = writeln!(md, "## good");
+            let _ = writeln!(md);
+            let _ = writeln!(md, "```sql");
+            let _ = writeln!(md, "{}", rule.example_good().trim_end());
+            let _ = writeln!(md);
+            let _ = writeln!(md, "```");
+            let _ = writeln!(md);
+        }
+        let _ = writeln!(
+            md,
+            "_generated by `drift docs`. edit the rule definition in `src/rules/`, not this file._"
+        );
+
+        let path = output.join(format!("{id}.md"));
+        if check {
+            let on_disk = std::fs::read_to_string(&path).unwrap_or_default();
+            if on_disk != md {
+                differing += 1;
+                eprintln!("docs out of date: {}", path.display());
+            }
+        } else {
+            std::fs::write(&path, md)?;
+            written += 1;
+        }
+    }
+
+    // also write an index.
+    let mut index = String::new();
+    let _ = writeln!(&mut index, "# rule index\n\n{} rules.\n", rules.len());
+    let mut by_cat: std::collections::BTreeMap<&'static str, Vec<&dyn crate::Rule>> =
+        std::collections::BTreeMap::new();
+    for r in rules.iter() {
+        by_cat.entry(r.category().as_str()).or_default().push(&**r);
+    }
+    for (cat, rs) in &by_cat {
+        let _ = writeln!(&mut index, "## {}\n", cat);
+        for r in rs {
+            let _ = writeln!(
+                &mut index,
+                "- [`{}`](./{}.md) — {}",
+                r.id(),
+                r.id(),
+                r.description().trim().lines().next().unwrap_or("")
+            );
+        }
+        let _ = writeln!(&mut index);
+    }
+    let index_path = output.join("README.md");
+    if check {
+        let on_disk = std::fs::read_to_string(&index_path).unwrap_or_default();
+        if on_disk != index {
+            differing += 1;
+            eprintln!("docs out of date: {}", index_path.display());
+        }
+    } else {
+        std::fs::write(&index_path, index)?;
+        written += 1;
+    }
+
+    if check {
+        if differing > 0 {
+            eprintln!(
+                "{differing} rule doc(s) differ from generator output. run `drift docs` and commit."
+            );
+            return Ok(1);
+        }
+        eprintln!("all rule docs in sync ({} pages checked)", rules.len() + 1);
+    } else {
+        eprintln!("wrote {written} pages into {}", output.display());
     }
     Ok(0)
 }

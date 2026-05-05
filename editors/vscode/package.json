@@ -1,0 +1,64 @@
+{
+  "name": "drift-sql",
+  "displayName": "drift sql",
+  "description": "SQL linter and formatter (drift). Diagnostics, code actions, format on save.",
+  "version": "0.15.0",
+  "publisher": "f4rkh4d",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/f4rkh4d/drift.git",
+    "directory": "editors/vscode"
+  },
+  "homepage": "https://drift.frkhd.com",
+  "categories": ["Linters", "Formatters", "Programming Languages"],
+  "keywords": ["sql", "linter", "formatter", "lsp", "postgres", "snowflake"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "activationEvents": [
+    "onLanguage:sql",
+    "workspaceContains:**/drift.toml",
+    "workspaceContains:**/.drift-baseline.json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "drift",
+      "properties": {
+        "drift.path": {
+          "type": "string",
+          "default": "drift",
+          "description": "Path to the drift binary. Defaults to looking up `drift` on the PATH."
+        },
+        "drift.dialect": {
+          "type": "string",
+          "enum": ["postgres", "mysql", "sqlite", "bigquery", "snowflake", "ansi"],
+          "default": "postgres",
+          "description": "Dialect override sent to the language server."
+        },
+        "drift.trace.server": {
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "off",
+          "description": "Trace LSP traffic to the Output panel (debugging only)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.3.0"
+  }
+}

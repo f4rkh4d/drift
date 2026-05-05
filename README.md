@@ -44,8 +44,12 @@ drift check --fail-on warning ...          # exit 1 on warnings or errors
 drift check --format sarif ...             # output for github code scanning
 drift check --format json ...              # output for any other consumer
 drift check --baseline .drift-baseline.json ...  # silence violations recorded in the baseline
+drift check --watch migrations/            # re-lint on every save
 drift baseline create migrations/          # snapshot current violations into .drift-baseline.json
 drift baseline show                        # print a summary of an existing baseline
+drift profile migrations/                  # which rules fire most, what to disable
+drift docs                                 # regenerate docs/rules/<id>.md from rule trait
+drift docs --check                         # ci gate: fail if docs are stale
 drift fix                                  # apply safe auto-fixes
 drift format queries.sql                   # reformat to stdout
 drift format -i queries.sql                # rewrite in place
@@ -62,9 +66,10 @@ any of them take `--dialect postgres|mysql|sqlite|bigquery|ansi`. when left unse
 - **mysql / mariadb**. merged. around 80%. some of the wilder index hints don't parse.
 - **sqlite**. ~80%. `WITHOUT ROWID` works, `STRICT` is partial.
 - **bigquery**. ~60%. struct/array literals parse, scripting blocks (`DECLARE`/`BEGIN`) mostly don't.
+- **snowflake**. new in 0.15.0. `LATERAL FLATTEN`, named arguments (`input =>`), QUALIFY, `:variant.path` accessors. roughly 70%; multi-statement scripts and stored procedures still partial.
 - **ansi**. baseline, for when you're writing for portability.
 
-not shipped yet: tsql, snowflake, redshift, oracle. on the roadmap. if you only use those, drift won't help you today.
+not shipped yet: tsql, redshift, oracle. on the roadmap. if you only use those, drift won't help you today.
 
 ## rule catalog
 
@@ -184,7 +189,7 @@ drift's pre-commit hooks invoke the binary on your `$PATH`, so install drift fir
 
 ## editor setup
 
-vscode: there's no published extension yet. point a generic lsp client at `drift lsp`.
+vscode: scaffold lives at [`editors/vscode`](editors/vscode). marketplace publish is queued.
 
 helix. in `languages.toml`:
 
@@ -210,6 +215,36 @@ require('lspconfig.configs').drift = {
 }
 require('lspconfig').drift.setup{}
 ```
+
+## profiling your codebase
+
+`drift profile` runs a check and aggregates the results: which rules fire most, where the noise lives. it ends with a recommended `drift.toml` snippet for the rules that are over 5% of all hits.
+
+```sh
+$ drift profile migrations/
+scanned 200 files in 7 ms
+total violations: 6680
+by severity:     6680 warning
+
+top 5 rules:
+  count  severity    rule
+   6400  warning     drift.style.keyword-case
+    120  warning     drift.style.identifier-case
+     40  warning     drift.style.double-blank-line
+     40  warning     drift.style.indent
+     40  warning     drift.style.line-length
+
+suggested drift.toml (rules above 5% of all hits, demoted to warning):
+
+  [rules]
+  "drift.style.keyword-case" = "warning"   # 6400 hits
+```
+
+`--json` for tool integration, `--top N` to widen the list.
+
+## editor: vscode
+
+a vscode extension lives at [`editors/vscode`](editors/vscode). it spawns `drift lsp` and surfaces diagnostics, code actions, and format-on-save inside the editor. install drift first via brew or the one-liner. marketplace publish is queued.
 
 ## adopting drift on a legacy codebase (baseline)
 

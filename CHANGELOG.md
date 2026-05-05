@@ -2,6 +2,16 @@
 
 format loosely follows keep-a-changelog. dates are iso.
 
+## [0.16.0]. 2026-05-05
+
+### added
+
+- **snowflake dialect**. `--dialect snowflake` (or `sf`). recognized extensions: `.snowflake`, `.snowsql`. parser accepts `LATERAL FLATTEN(input => col)`, named arguments, QUALIFY, and the rest of sqlparser's snowflake support. roughly 70% coverage; multi-statement scripts and stored procedures are still partial. dbt-snowflake users were the most common ask after the 0.14 cut.
+- **`drift check --watch`**. re-runs the check whenever a file under the given paths changes. uses notify-debouncer-mini, so a flurry of editor saves coalesces into one re-lint within ~250 ms. the right answer for users who don't have an LSP-aware editor.
+- **`drift profile`**. runs a check and aggregates by rule: top-N firing rules, total counts, severity breakdown. ends with a suggested `drift.toml` block for rules above 5% of total hits ("noisy, consider demoting to warning"). `--json` for tooling, `--top N` to widen the list.
+- **`drift docs [--check]`**. regenerates `docs/rules/<rule_id>.md` from the rule trait (id, category, severity, description, example_bad, example_good) plus a category-grouped `README.md` index. `--check` mode fails CI if any generated page differs from disk, so docs cannot drift from code in either direction.
+- **vscode extension scaffold** at `editors/vscode/`. spawns `drift lsp` and surfaces diagnostics, code actions, and format-on-save. settings: `drift.path`, `drift.dialect`, `drift.trace.server`. marketplace publish is queued.
+
 ## [0.15.0]. 2026-05-05
 
 ### added
