@@ -1,15 +1,19 @@
 [package]
-name = "drift"
-version = "0.14.43"
+name = "drift-sql"
+version = "0.15.0"
 edition = "2021"
 rust-version = "1.75"
-description = "sql linter and formatter in rust. multi-dialect. single binary."
+description = "sql linter and formatter. multi-dialect, single binary, 60-180x faster than sqlfluff."
 license = "MIT"
 authors = ["farkhad <bennett@frkhd.com>"]
 repository = "https://github.com/f4rkh4d/drift"
 readme = "README.md"
 keywords = ["sql", "linter", "formatter", "lsp", "cli"]
 categories = ["command-line-utilities", "development-tools"]
+
+# the package on crates.io is `drift-sql` (the unscoped `drift` was already taken
+# by an unrelated openapi tool). the binary you get is still `drift` so workflows
+# and shell aliases stay unchanged.
 
 [lib]
 name = "drift"

@@ -1,0 +1,64 @@
+name: 'drift sql lint'
+description: 'lint SQL files with drift. single binary, 60-180x faster than sqlfluff.'
+author: 'farkhad'
+branding:
+  icon: 'database'
+  color: 'orange'
+
+inputs:
+  args:
+    description: 'extra arguments to pass to drift after the subcommand'
+    required: false
+    default: ''
+  command:
+    description: 'drift subcommand to run (check, fix, format)'
+    required: false
+    default: 'check'
+  paths:
+    description: 'paths or globs to lint, space-separated'
+    required: false
+    default: '.'
+  version:
+    description: 'drift version to use (e.g. v0.14.43). defaults to latest release.'
+    required: false
+    default: 'latest'
+  fail-on:
+    description: 'minimum severity that fails the build: error|warning|info|never'
+    required: false
+    default: 'error'
+  config:
+    description: 'path to drift.toml. drift will walk up looking for one if unset.'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: install drift
+      shell: bash
+      env:
+        DRIFT_VERSION: ${{ inputs.version }}
+      run: |
+        set -eu
+        bin_dir="$HOME/.local/bin"
+        mkdir -p "$bin_dir"
+        echo "$bin_dir" >> "$GITHUB_PATH"
+        curl -fsSL https://raw.githubusercontent.com/f4rkh4d/drift/main/install.sh \
+            | sh -s -- --bin-dir "$bin_dir" --version "$DRIFT_VERSION"
+
+    - name: run drift
+      shell: bash
+      env:
+        DRIFT_CMD: ${{ inputs.command }}
+        DRIFT_PATHS: ${{ inputs.paths }}
+        DRIFT_FAIL_ON: ${{ inputs.fail-on }}
+        DRIFT_CONFIG: ${{ inputs.config }}
+        DRIFT_ARGS: ${{ inputs.args }}
+      run: |
+        set -eu
+        cmd="drift $DRIFT_CMD"
+        [ -n "$DRIFT_CONFIG" ] && cmd="$cmd --config $DRIFT_CONFIG"
+        [ -n "$DRIFT_FAIL_ON" ] && cmd="$cmd --fail-on $DRIFT_FAIL_ON"
+        [ -n "$DRIFT_ARGS" ] && cmd="$cmd $DRIFT_ARGS"
+        # shellcheck disable=SC2086
+        $cmd $DRIFT_PATHS

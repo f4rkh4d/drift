@@ -1,10 +1,14 @@
 # drift
 
+[![ci](https://github.com/f4rkh4d/drift/actions/workflows/ci.yml/badge.svg)](https://github.com/f4rkh4d/drift/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/drift-sql.svg)](https://crates.io/crates/drift-sql)
+[![release](https://img.shields.io/github/v/release/f4rkh4d/drift)](https://github.com/f4rkh4d/drift/releases)
+[![license](https://img.shields.io/github/license/f4rkh4d/drift)](LICENSE)
 
 ![demo](docs/demo.gif)
 sql linter and formatter in rust. 5 dialects. single binary.
 
-80+ rules. on my laptop it lints a 4,200-file dbt project in about 3.1 seconds, which is somewhere between 60 and 180 times faster than sqlfluff against the same corpus depending on how many macros you have.
+80+ rules. on my laptop it lints a 4,200-file dbt project in about 3.1 seconds, which is somewhere between 60 and 180 times faster than sqlfluff against the same corpus depending on how many macros you have. reproduce: `bash benches/sqlfluff_compare.sh`.
 
 ```
 $ drift check migrations/
@@ -18,11 +22,19 @@ migrations/0044_seed.sql:3:12 error [drift.correctness.null-equality]
 
 ## install
 
-```
-cargo install drift
+```sh
+# one-liner (linux + mac, amd64 + arm64)
+curl -fsSL https://raw.githubusercontent.com/f4rkh4d/drift/main/install.sh | sh
+
+# homebrew (mac)
+brew install f4rkh4d/tap/drift
+
+# cargo. note: the unscoped `drift` name on crates.io is an unrelated openapi
+# tool; this crate ships as `drift-sql`, the installed binary is still `drift`.
+cargo install drift-sql
 ```
 
-pre-built binaries for linux/mac (amd64 + arm64) are attached to every release. a homebrew tap and an install.sh are on the 0.15 list.
+pre-built binaries for linux/mac (amd64 + arm64) are attached to every release: <https://github.com/f4rkh4d/drift/releases>.
 
 ## quick start
 
@@ -106,6 +118,34 @@ short version: sqlfluff is broader, drift is faster. if your pipeline already ru
 ## vs pgformatter, sqlfmt
 
 pgformatter is postgres-only, formatter-only. sqlfmt is postgres + dbt-flavored, opinionated one-true-style. drift lints first, formats second, and spans more dialects. pick sqlfmt if you already live in that formatting style and don't care about lint rules.
+
+## ci
+
+### github actions
+
+```yaml
+- uses: f4rkh4d/drift@main
+  with:
+    paths: 'migrations/'
+    fail-on: error
+```
+
+inputs: `command` (default `check`), `paths`, `fail-on` (`error|warning|info|never`), `config`, `version`, `args`. pin `@main` to a release tag for stability.
+
+### pre-commit
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/f4rkh4d/drift
+    rev: v0.14.43
+    hooks:
+      - id: drift-check
+      - id: drift-fix      # apply the safe auto-fixes
+      - id: drift-format   # format in place
+```
+
+drift's pre-commit hooks invoke the binary on your `$PATH`, so install drift first via brew, the install script, or cargo.
 
 ## editor setup
 

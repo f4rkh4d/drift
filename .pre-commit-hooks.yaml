@@ -1,0 +1,20 @@
+- id: drift-check
+  name: drift check
+  description: lint SQL files with drift
+  entry: drift check
+  language: system
+  types: [sql]
+
+- id: drift-fix
+  name: drift fix
+  description: apply drift's safe auto-fixes
+  entry: drift fix
+  language: system
+  types: [sql]
+
+- id: drift-format
+  name: drift format
+  description: format SQL files in place with drift
+  entry: drift format -i
+  language: system
+  types: [sql]

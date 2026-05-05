@@ -2,6 +2,21 @@
 
 format loosely follows keep-a-changelog. dates are iso.
 
+## [0.15.0]. 2026-05-05
+
+### added
+
+- one-line installer: `curl -fsSL https://raw.githubusercontent.com/f4rkh4d/drift/main/install.sh | sh`. picks the right linux/mac amd64/arm64 archive from the latest release.
+- composite github action at the repo root (`action.yml`). pipelines can now `uses: f4rkh4d/drift@main` with `command`, `paths`, `fail-on`, `config`, `version`, `args` inputs.
+- pre-commit hooks (`.pre-commit-hooks.yaml`): `drift-check`, `drift-fix`, `drift-format`.
+- homebrew formula in `f4rkh4d/homebrew-tap`: `brew install f4rkh4d/tap/drift` on macOS.
+- reproducible benchmark script at `benches/sqlfluff_compare.sh`. clones a public dbt project, renders it, runs drift and sqlfluff back to back, prints the two wall-clock times. lets readers verify the sqlfluff comparison instead of taking my word for it.
+- crates.io / version / license / ci badges in the readme.
+
+### changed
+
+- crate renamed on crates.io from `drift` to `drift-sql`. the name `drift` was already taken by an unrelated openapi tool. the binary you get after `cargo install drift-sql` is still `drift`, so existing scripts and shell aliases keep working unchanged.
+
 ## [0.14.43]. 2026-04-19
 
 ### fixed
