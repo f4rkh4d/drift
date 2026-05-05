@@ -2,6 +2,12 @@
 
 format loosely follows keep-a-changelog. dates are iso.
 
+## [unreleased]
+
+### added
+
+- honor the `NO_COLOR` env var (https://no-color.org/). when `NO_COLOR` is present with any value, drift skips ANSI color codes in `pretty` output. the explicit `--no-color` flag still works and is honored on top of the env var.
+
 ## [0.17.0]. 2026-05-05
 
 ### added

@@ -145,6 +145,12 @@ pub fn run(cli: Cli) -> Result<i32> {
         cfg.dialect = Some(d.parse::<Dialect>().map_err(anyhow::Error::msg)?);
     }
 
+    // honor the NO_COLOR convention (https://no-color.org/): when NO_COLOR
+    // is present in the environment with any value (including the empty
+    // string), color output is disabled. the explicit --no-color flag is
+    // still honored on top of that.
+    let use_color = !cli.no_color && std::env::var_os("NO_COLOR").is_none();
+
     match cli.cmd {
         Cmd::Check {
             files,
@@ -155,21 +161,14 @@ pub fn run(cli: Cli) -> Result<i32> {
             watch,
         } => {
             if watch {
-                cmd_check_watch(
-                    &cfg,
-                    &files,
-                    &fmt,
-                    !cli.no_color,
-                    &fail_on,
-                    baseline.as_deref(),
-                )
+                cmd_check_watch(&cfg, &files, &fmt, use_color, &fail_on, baseline.as_deref())
             } else {
                 cmd_check(
                     &cfg,
                     &files,
                     &fmt,
                     stdin,
-                    !cli.no_color,
+                    use_color,
                     &fail_on,
                     baseline.as_deref(),
                 )
