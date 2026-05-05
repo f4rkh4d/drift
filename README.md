@@ -39,6 +39,7 @@ pre-built binaries for linux/mac (amd64 + arm64) are attached to every release: 
 ## quick start
 
 ```
+drift init                                 # scaffold a drift.toml in the current dir
 drift check **/*.sql                       # lint, exit 1 on errors
 drift check --fail-on warning ...          # exit 1 on warnings or errors
 drift check --format sarif ...             # output for github code scanning
