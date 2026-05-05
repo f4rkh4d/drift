@@ -205,7 +205,16 @@ fn expand(files: &[PathBuf]) -> Vec<PathBuf> {
                 }
             }
         } else if f.is_dir() {
-            for ext in &["sql", "pgsql", "mysql", "sqlite", "snowflake", "snowsql"] {
+            for ext in &[
+                "sql",
+                "pgsql",
+                "mysql",
+                "sqlite",
+                "snowflake",
+                "snowsql",
+                "tsql",
+                "mssql",
+            ] {
                 let pat = format!("{}/**/*.{}", s, ext);
                 if let Ok(iter) = glob::glob(&pat) {
                     for entry in iter.flatten() {
@@ -594,7 +603,14 @@ fn cmd_check_watch(
                         .map(|ext| {
                             matches!(
                                 ext,
-                                "sql" | "pgsql" | "mysql" | "sqlite" | "snowflake" | "snowsql"
+                                "sql"
+                                    | "pgsql"
+                                    | "mysql"
+                                    | "sqlite"
+                                    | "snowflake"
+                                    | "snowsql"
+                                    | "tsql"
+                                    | "mssql"
                             )
                         })
                         .unwrap_or(false)

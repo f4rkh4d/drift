@@ -2,6 +2,14 @@
 
 format loosely follows keep-a-changelog. dates are iso.
 
+## [0.17.0]. 2026-05-05
+
+### added
+
+- **tsql / sql server dialect**. `--dialect tsql` (or `mssql`, `sqlserver`). recognized extensions: `.tsql`, `.mssql`. parser accepts `SELECT TOP N`, `[bracket]` identifier delimiters, `OUTPUT` clause, `MERGE`. roughly 65% coverage; CTE-heavy stored procedures still partial.
+- **runnable bad/good examples on every rule**. 70 rules across all 7 categories now have real `example_bad()` and `example_good()` blocks (previously only KeywordCase). `drift explain RULE` is now substantive instead of a one-liner, and `docs/rules/<id>.md` ships with `## bad` / `## good` SQL fences for every rule.
+- **`drift docs --check` step in CI**. ubuntu job runs the docs-generator in check mode after the test suite, so any rule trait change that the contributor forgot to regenerate docs for breaks the build.
+
 ## [0.16.0]. 2026-05-05
 
 ### added

@@ -2,8 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 use sqlparser::dialect::{
-    AnsiDialect, BigQueryDialect, Dialect as SqlDialect, GenericDialect, MySqlDialect,
-    PostgreSqlDialect, SQLiteDialect, SnowflakeDialect,
+    AnsiDialect, BigQueryDialect, Dialect as SqlDialect, GenericDialect, MsSqlDialect,
+    MySqlDialect, PostgreSqlDialect, SQLiteDialect, SnowflakeDialect,
 };
 use std::path::Path;
 use std::str::FromStr;
@@ -16,6 +16,7 @@ pub enum Dialect {
     Sqlite,
     BigQuery,
     Snowflake,
+    Tsql,
     #[default]
     Ansi,
 }
@@ -28,6 +29,7 @@ impl Dialect {
             Dialect::Sqlite => Box::new(SQLiteDialect {}),
             Dialect::BigQuery => Box::new(BigQueryDialect {}),
             Dialect::Snowflake => Box::new(SnowflakeDialect {}),
+            Dialect::Tsql => Box::new(MsSqlDialect {}),
             Dialect::Ansi => Box::new(AnsiDialect {}),
         }
     }
@@ -45,6 +47,7 @@ impl Dialect {
             "sqlite" | "sqlite3" => Some(Dialect::Sqlite),
             "bq" | "bigquery" => Some(Dialect::BigQuery),
             "snowflake" | "snowsql" => Some(Dialect::Snowflake),
+            "tsql" | "mssql" => Some(Dialect::Tsql),
             _ => None,
         }
     }
@@ -56,6 +59,7 @@ impl Dialect {
             Dialect::Sqlite => "sqlite",
             Dialect::BigQuery => "bigquery",
             Dialect::Snowflake => "snowflake",
+            Dialect::Tsql => "tsql",
             Dialect::Ansi => "ansi",
         }
     }
@@ -70,6 +74,7 @@ impl FromStr for Dialect {
             "sqlite" | "sqlite3" => Ok(Dialect::Sqlite),
             "bigquery" | "bq" => Ok(Dialect::BigQuery),
             "snowflake" | "snowsql" | "sf" => Ok(Dialect::Snowflake),
+            "tsql" | "mssql" | "sqlserver" => Ok(Dialect::Tsql),
             "ansi" | "standard" => Ok(Dialect::Ansi),
             other => Err(format!("unknown dialect: {other}")),
         }
@@ -108,6 +113,31 @@ mod tests {
         assert_eq!("snowflake".parse::<Dialect>().unwrap(), Dialect::Snowflake);
         assert_eq!("sf".parse::<Dialect>().unwrap(), Dialect::Snowflake);
         assert!("oracle".parse::<Dialect>().is_err());
+    }
+
+    #[test]
+    fn tsql_parses_top_and_brackets() {
+        // canary: tsql's `SELECT TOP 10` and `[bracket]` identifier delimiters
+        // are tsql-specific and the postgres parser rejects them.
+        use crate::parse::parse;
+        let sql = "SELECT TOP 10 [order id] FROM [orders];";
+        let parsed = parse(sql, Dialect::Tsql);
+        assert!(
+            !parsed.statements.is_empty(),
+            "tsql parser should accept TOP and [bracket] identifiers"
+        );
+    }
+
+    #[test]
+    fn tsql_extensions_detected() {
+        assert_eq!(
+            Dialect::detect_from_path(Path::new("q.tsql")),
+            Some(Dialect::Tsql)
+        );
+        assert_eq!(
+            Dialect::detect_from_path(Path::new("q.mssql")),
+            Some(Dialect::Tsql)
+        );
     }
 
     #[test]

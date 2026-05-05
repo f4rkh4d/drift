@@ -25,3 +25,6 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo build --release
       - run: cargo test --release
+      - name: rule docs are in sync
+        if: matrix.os == 'ubuntu-latest'
+        run: ./target/release/drift docs --check

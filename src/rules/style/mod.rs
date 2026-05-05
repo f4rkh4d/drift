@@ -104,6 +104,12 @@ impl Rule for IdentifierCaseRule {
     fn description(&self) -> &'static str {
         "unquoted identifiers should be lowercase"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM Users WHERE userId = 1;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE user_id = 1;"
+    }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for t in &p.tokens {
@@ -146,6 +152,12 @@ impl Rule for IndentRule {
     fn description(&self) -> &'static str {
         "indentation should be a multiple of the configured indent width"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id,\n  name,\n     email\nFROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id,\n       name,\n       email\nFROM users;"
+    }
     fn check(&self, p: &Parsed, cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for (i, line) in p.source.lines().enumerate() {
@@ -187,6 +199,12 @@ impl Rule for TrailingWhitespaceRule {
     fn description(&self) -> &'static str {
         "lines should not end with whitespace"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id   \nFROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id\nFROM users;"
+    }
     fn fixable(&self) -> bool {
         true
     }
@@ -226,6 +244,12 @@ impl Rule for TrailingNewlineRule {
     }
     fn description(&self) -> &'static str {
         "file should end with a single newline"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users;\n"
     }
     fn fixable(&self) -> bool {
         true
@@ -267,6 +291,12 @@ impl Rule for SemicolonTerminatorRule {
     }
     fn description(&self) -> &'static str {
         "every statement should end with a semicolon"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users;"
     }
     fn fixable(&self) -> bool {
         true
@@ -313,6 +343,12 @@ impl Rule for LeadingCommaRule {
     fn description(&self) -> &'static str {
         "flags lines that start with a comma when the style is trailing"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id\n     , name\n     , email\nFROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id,\n       name,\n       email\nFROM users;"
+    }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for (i, line) in p.source.lines().enumerate() {
@@ -349,6 +385,12 @@ impl Rule for DoubleBlankRule {
     }
     fn description(&self) -> &'static str {
         "no more than one consecutive blank line"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id FROM users;\n\n\n\nSELECT id FROM orders;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id FROM users;\n\nSELECT id FROM orders;"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -390,6 +432,12 @@ impl Rule for TabIndentRule {
     fn description(&self) -> &'static str {
         "tabs are forbidden for indentation"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id,\n	name\nFROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id,\n  name\nFROM users;"
+    }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for (i, line) in p.source.lines().enumerate() {
@@ -426,6 +474,12 @@ impl Rule for SpaceBeforeCommaRule {
     }
     fn description(&self) -> &'static str {
         "do not put whitespace before commas"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id ,name ,email FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id, name, email FROM users;"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -466,6 +520,12 @@ impl Rule for SpaceAfterCommaRule {
     }
     fn description(&self) -> &'static str {
         "commas must be followed by whitespace"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id,name,email FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id, name, email FROM users;"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -509,6 +569,12 @@ impl Rule for SpaceAroundOperatorRule {
     }
     fn description(&self) -> &'static str {
         "binary operators should have whitespace on both sides"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE active=true AND id>10;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE active = true AND id > 10;"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -555,6 +621,12 @@ impl Rule for AliasAsRule {
     fn description(&self) -> &'static str {
         "use explicit AS for column aliases (select a AS b, not select a b)"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT u.id user_id FROM users u;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT u.id AS user_id FROM users AS u;"
+    }
     fn check(&self, _p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         // structural check needs more context; sentinel until 0.15
         Vec::new()
@@ -578,6 +650,12 @@ impl Rule for SingleQuoteStringRule {
     }
     fn description(&self) -> &'static str {
         "string literals should use single quotes (double quotes are identifiers in ansi sql)"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE name = \"farkhad\";"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE name = 'farkhad';"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -630,6 +708,12 @@ impl Rule for UpperKeywordReservedRule {
     fn description(&self) -> &'static str {
         "avoid using reserved keywords as identifiers, even quoted"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT \"order\".id FROM \"order\";"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT orders.id FROM orders;"
+    }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for t in &p.tokens {
@@ -668,6 +752,12 @@ impl Rule for LineLengthRule {
     }
     fn description(&self) -> &'static str {
         "lines should be within the configured max length"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id, email, full_name, created_at, updated_at, last_login_at, deleted_at, signup_source, referral_code FROM users WHERE active = true AND verified = true;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id,\n       email,\n       full_name,\n       created_at,\n       updated_at\nFROM users\nWHERE active = true\n  AND verified = true;"
     }
     fn check(&self, p: &Parsed, cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -709,6 +799,12 @@ impl Rule for RedundantParensRule {
     }
     fn description(&self) -> &'static str {
         "flags `((expr))` — one level is enough"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE ((id = 1));"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE id = 1;"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -752,6 +848,12 @@ impl Rule for EmptyFileRule {
     fn description(&self) -> &'static str {
         "empty or whitespace-only files probably aren't intended"
     }
+    fn example_bad(&self) -> &'static str {
+        ""
+    }
+    fn example_good(&self) -> &'static str {
+        "-- intentionally empty placeholder for migration tooling\nSELECT 1;"
+    }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         if p.source.trim().is_empty() {
             return vec![Violation {
@@ -785,6 +887,12 @@ impl Rule for TrailingCommaRule {
     }
     fn description(&self) -> &'static str {
         "trailing commas before `from` / `)` are a parse error in most dialects"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id, name, email,\nFROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id, name, email\nFROM users;"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -834,6 +942,12 @@ impl Rule for CrlfRule {
     }
     fn description(&self) -> &'static str {
         "files should use LF line endings, not CRLF"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id\r\nFROM users;\r\n"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id\nFROM users;\n"
     }
     fn check(&self, p: &Parsed, _cfg: &Config) -> Vec<Violation> {
         if p.source.contains("\r\n") {

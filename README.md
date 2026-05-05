@@ -67,9 +67,10 @@ any of them take `--dialect postgres|mysql|sqlite|bigquery|ansi`. when left unse
 - **sqlite**. ~80%. `WITHOUT ROWID` works, `STRICT` is partial.
 - **bigquery**. ~60%. struct/array literals parse, scripting blocks (`DECLARE`/`BEGIN`) mostly don't.
 - **snowflake**. new in 0.15.0. `LATERAL FLATTEN`, named arguments (`input =>`), QUALIFY, `:variant.path` accessors. roughly 70%; multi-statement scripts and stored procedures still partial.
+- **tsql / sql server**. new in 0.17.0. `TOP N`, `[bracket]` identifiers, `OUTPUT` clause, `MERGE`. roughly 65%; CTE-heavy stored procedures still need work.
 - **ansi**. baseline, for when you're writing for portability.
 
-not shipped yet: tsql, redshift, oracle. on the roadmap. if you only use those, drift won't help you today.
+not shipped yet: redshift, oracle. on the roadmap. if you only use those, drift won't help you today.
 
 ## rule catalog
 
