@@ -30,6 +30,12 @@ impl Rule for ReservedAsIdentifier {
     fn description(&self) -> &'static str {
         "using a reserved word as an identifier forces quoting everywhere it appears"
     }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE \"order\" (id int);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE orders (id int);"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for t in &p.tokens {
@@ -68,6 +74,12 @@ impl Rule for DuplicateAlias {
     fn description(&self) -> &'static str {
         "two tables with the same alias in one FROM clause is ambiguous"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT u.id, o.id\nFROM users u\nJOIN orders u ON u.user_id = u.id;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT u.id, o.id\nFROM users u\nJOIN orders o ON o.user_id = u.id;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new() // covered by correctness.self-join-no-alias for the common case
     }
@@ -90,6 +102,12 @@ impl Rule for UnqualifiedColumnInJoin {
     fn description(&self) -> &'static str {
         "when two tables are joined, every column reference should be qualified"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id, name\nFROM users\nJOIN profiles ON users.id = profiles.user_id;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT users.id, users.name\nFROM users\nJOIN profiles ON users.id = profiles.user_id;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new() // needs scope tracking; placeholder
     }
@@ -111,6 +129,12 @@ impl Rule for MixedCaseBoolLiteral {
     }
     fn description(&self) -> &'static str {
         "pick one: TRUE / true. don't mix."
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE active = 1 OR verified = TRUE;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE active = TRUE AND verified = TRUE;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let src = &p.source;
@@ -147,6 +171,12 @@ impl Rule for SameNameFnAndCol {
     }
     fn description(&self) -> &'static str {
         "naming a column `count` or `current_date` invites parse ambiguity"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT count FROM page_views;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT view_count FROM page_views;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();

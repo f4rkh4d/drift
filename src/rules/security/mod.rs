@@ -32,6 +32,12 @@ impl Rule for GrantAll {
     fn description(&self) -> &'static str {
         "GRANT ALL is almost never what you want. specify the privileges."
     }
+    fn example_bad(&self) -> &'static str {
+        "GRANT ALL ON users TO app_user;"
+    }
+    fn example_good(&self) -> &'static str {
+        "GRANT SELECT, INSERT, UPDATE ON users TO app_user;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();
         let mut out = Vec::new();
@@ -70,6 +76,12 @@ impl Rule for PublicSchemaWrite {
     fn description(&self) -> &'static str {
         "public schema writes are an old postgres habit; scoped schemas are safer"
     }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE public.tokens (id int, secret text);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE SCHEMA app;\nCREATE TABLE app.tokens (id int, secret text);"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();
         if lower.contains("create table public.") || lower.contains("insert into public.") {
@@ -103,6 +115,12 @@ impl Rule for PlaintextPasswordLiteral {
     }
     fn description(&self) -> &'static str {
         "password literals in migrations leak to logs, backups, git history"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE users (\n  id int PRIMARY KEY,\n  password text\n);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE users (\n  id int PRIMARY KEY,\n  password_hash text NOT NULL  -- bcrypt/argon2\n);"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();
@@ -145,6 +163,12 @@ impl Rule for DynamicSqlConcat {
     fn description(&self) -> &'static str {
         "concatenated sql in stored procs is an injection smell"
     }
+    fn example_bad(&self) -> &'static str {
+        "EXECUTE 'SELECT * FROM users WHERE id = ' || user_input;"
+    }
+    fn example_good(&self) -> &'static str {
+        "EXECUTE 'SELECT * FROM users WHERE id = $1' USING user_input;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         let lower = p.source.to_lowercase();
@@ -185,6 +209,12 @@ impl Rule for DropWithoutIfExists {
     }
     fn description(&self) -> &'static str {
         "idempotent migrations should use IF EXISTS"
+    }
+    fn example_bad(&self) -> &'static str {
+        "DROP TABLE sessions;"
+    }
+    fn example_good(&self) -> &'static str {
+        "DROP TABLE IF EXISTS sessions;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -237,6 +267,12 @@ impl Rule for TruncateNoCascade {
     fn description(&self) -> &'static str {
         "TRUNCATE semantics differ across engines; state cascade/restrict explicitly"
     }
+    fn example_bad(&self) -> &'static str {
+        "TRUNCATE orders;"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- if FKs depend on it, be explicit:\nTRUNCATE orders RESTRICT;\n-- or, when you actually want the cascade:\nTRUNCATE orders CASCADE;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();
         if lower.contains("truncate ") && !lower.contains("cascade") && !lower.contains("restrict")
@@ -271,6 +307,12 @@ impl Rule for SelectIntoOutfile {
     }
     fn description(&self) -> &'static str {
         "MySQL SELECT INTO OUTFILE/DUMPFILE writes to the server filesystem. often abused for SQLi-to-RCE pivots and leaks data outside DB access control."
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users INTO OUTFILE '/tmp/users.csv';"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- export through your application or a backup tool, not the SQL client:\n\\copy users TO '/tmp/users.csv' CSV HEADER;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();

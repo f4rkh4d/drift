@@ -44,6 +44,12 @@ impl Rule for MissingWhereUpdate {
     fn description(&self) -> &'static str {
         "UPDATE without WHERE rewrites every row. almost always a mistake."
     }
+    fn example_bad(&self) -> &'static str {
+        "UPDATE users SET active = 0;"
+    }
+    fn example_good(&self) -> &'static str {
+        "UPDATE users SET active = 0 WHERE last_login < '2024-01-01';"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for stmt in &p.statements {
@@ -83,6 +89,12 @@ impl Rule for MissingWhereDelete {
     fn description(&self) -> &'static str {
         "DELETE without WHERE empties the table. use TRUNCATE if that's what you meant."
     }
+    fn example_bad(&self) -> &'static str {
+        "DELETE FROM sessions;"
+    }
+    fn example_good(&self) -> &'static str {
+        "DELETE FROM sessions WHERE created_at < NOW() - INTERVAL '30 days';"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for stmt in &p.statements {
@@ -120,6 +132,12 @@ impl Rule for SelfJoinNoAlias {
     }
     fn description(&self) -> &'static str {
         "a table joined with itself needs aliases on both sides"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT *\nFROM employees\nJOIN employees ON employees.manager_id = employees.id;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT e.name, m.name AS manager\nFROM employees e\nJOIN employees m ON e.manager_id = m.id;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -188,6 +206,12 @@ impl Rule for CartesianJoin {
     fn description(&self) -> &'static str {
         "multiple tables in FROM with no WHERE or JOIN predicate"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT u.name, o.total\nFROM users u, orders o;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT u.name, o.total\nFROM users u\nJOIN orders o ON o.user_id = u.id;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for stmt in &p.statements {
@@ -231,6 +255,12 @@ impl Rule for BetweenOnDate {
     fn description(&self) -> &'static str {
         "BETWEEN '2025-01-01' AND '2025-01-31' excludes the last day of january when cast to timestamp"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM events\nWHERE created_at BETWEEN '2025-01-01' AND '2025-01-31';"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM events\nWHERE created_at >= '2025-01-01'\n  AND created_at <  '2025-02-01';"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         // heuristic: look for BETWEEN followed by two date-looking literals
         let mut out = Vec::new();
@@ -273,6 +303,12 @@ impl Rule for ImplicitTypeCoercion {
     }
     fn description(&self) -> &'static str {
         "comparing a number column to a string literal ('5' vs 5) forces a coercion"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM orders WHERE total = '100';"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM orders WHERE total = 100;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         // token pattern: `= '<digits>'` or `= "<digits>"` next to a bare ident
@@ -324,6 +360,12 @@ impl Rule for CaseWithoutElse {
     }
     fn description(&self) -> &'static str {
         "CASE without ELSE returns NULL for unmatched rows — usually unintended"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT\n  CASE status\n    WHEN 'paid'    THEN 1\n    WHEN 'pending' THEN 2\n  END AS rank\nFROM orders;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT\n  CASE status\n    WHEN 'paid'    THEN 1\n    WHEN 'pending' THEN 2\n    ELSE 0\n  END AS rank\nFROM orders;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         // token scan: CASE ... END without ELSE
@@ -397,6 +439,12 @@ impl Rule for NullEqualityRule {
     fn description(&self) -> &'static str {
         "`x = NULL` is always unknown. use `x IS NULL`."
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE deleted_at = NULL;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE deleted_at IS NULL;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         // token pattern: = NULL or <> NULL, != NULL
@@ -445,6 +493,12 @@ impl Rule for DistinctOnWithoutOrderBy {
     fn description(&self) -> &'static str {
         "DISTINCT ON without a matching ORDER BY returns arbitrary rows"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT DISTINCT ON (user_id) *\nFROM events;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT DISTINCT ON (user_id) *\nFROM events\nORDER BY user_id, created_at DESC;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let src = p.source.to_lowercase();
         if src.contains("distinct on") && !src.contains("order by") {
@@ -479,6 +533,12 @@ impl Rule for UnionVsUnionAll {
     }
     fn description(&self) -> &'static str {
         "plain UNION deduplicates, which you rarely want. be explicit."
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id FROM customers\nUNION\nSELECT id FROM partners;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id FROM customers\nUNION ALL\nSELECT id FROM partners;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -530,6 +590,12 @@ impl Rule for DivZeroLiteral {
     fn description(&self) -> &'static str {
         "`/ 0` as a literal is a guaranteed runtime error"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT total / 0 FROM invoices;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT CASE WHEN tax_rate = 0 THEN 0 ELSE total / tax_rate END\nFROM invoices;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         let tokens: Vec<_> = p
@@ -575,6 +641,12 @@ impl Rule for DuplicateColumn {
     fn description(&self) -> &'static str {
         "same column appearing twice in SELECT without aliasing"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id, name, name FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id, name, display_name FROM users;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new() // placeholder; requires projection normalization
     }
@@ -596,6 +668,12 @@ impl Rule for OrderByOrdinal {
     }
     fn description(&self) -> &'static str {
         "ORDER BY 1, 2 is fragile; use explicit column names"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT id, created_at, name FROM users ORDER BY 2 DESC;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id, created_at, name FROM users ORDER BY created_at DESC;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -645,6 +723,12 @@ impl Rule for GroupByWithNoAgg {
     fn description(&self) -> &'static str {
         "GROUP BY with no aggregate is equivalent to DISTINCT"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT user_id\nFROM events\nGROUP BY user_id;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT DISTINCT user_id FROM events;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -666,6 +750,12 @@ impl Rule for UsingReservedFnName {
     }
     fn description(&self) -> &'static str {
         "CREATE FUNCTION with a reserved name will shadow built-ins"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE FUNCTION count(text) RETURNS int AS $$\n  SELECT length($1)\n$$ LANGUAGE sql;"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE FUNCTION text_length(text) RETURNS int AS $$\n  SELECT length($1)\n$$ LANGUAGE sql;"
     }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()

@@ -35,6 +35,12 @@ impl Rule for SelectStar {
     fn description(&self) -> &'static str {
         "SELECT * fetches columns you don't need and breaks when the schema changes"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id, email, created_at FROM users;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for stmt in &p.statements {
@@ -76,6 +82,12 @@ impl Rule for LeadingWildcardLike {
     }
     fn description(&self) -> &'static str {
         "LIKE '%foo' can't use a btree index. full table scan territory."
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM products WHERE name LIKE '%phone';"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM products WHERE name LIKE 'phone%';"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -126,6 +138,12 @@ impl Rule for FnOnIndexedColumn {
     fn description(&self) -> &'static str {
         "calling a function on a column in WHERE prevents the index from being used"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE LOWER(email) = 'foo@bar.com';"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- store the lowercased value, or add a functional index:\nCREATE INDEX users_email_lower ON users (LOWER(email));\nSELECT * FROM users WHERE LOWER(email) = 'foo@bar.com';"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         let src = &p.source;
@@ -167,6 +185,12 @@ impl Rule for NestedSubqueryCouldBeJoin {
     }
     fn description(&self) -> &'static str {
         "deeply nested subqueries often rewrite to JOINs cleanly"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users\nWHERE id IN (\n  SELECT user_id FROM (\n    SELECT user_id FROM orders WHERE total > 100\n  ) sub\n);"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT u.* FROM users u\nJOIN orders o ON o.user_id = u.id\nWHERE o.total > 100;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         // count nested SELECTs via paren depth
@@ -219,6 +243,12 @@ impl Rule for OrderByRand {
     fn description(&self) -> &'static str {
         "ORDER BY random() / RAND() sorts the whole table to pick N rows"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users ORDER BY RANDOM() LIMIT 10;"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- pick a stable random window:\nSELECT * FROM users TABLESAMPLE SYSTEM (1) LIMIT 10;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();
         let mut out = Vec::new();
@@ -257,6 +287,12 @@ impl Rule for CountStarVsCountCol {
     fn description(&self) -> &'static str {
         "COUNT(col) filters nulls; if you want total rows, use COUNT(*)"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT COUNT(email) FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT COUNT(*) FROM users;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -279,6 +315,12 @@ impl Rule for InSubqueryCouldBeExists {
     fn description(&self) -> &'static str {
         "IN (subquery) with a large result is often faster as EXISTS"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users\nWHERE id IN (SELECT user_id FROM orders);"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT u.* FROM users u\nWHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -300,6 +342,12 @@ impl Rule for OffsetPaging {
     }
     fn description(&self) -> &'static str {
         "OFFSET is O(n) in most engines; prefer keyset paging for deep pages"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM events ORDER BY created_at LIMIT 50 OFFSET 100000;"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- keyset pagination is O(log n):\nSELECT * FROM events\nWHERE created_at > $last_seen_ts\nORDER BY created_at\nLIMIT 50;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let lower = p.source.to_lowercase();

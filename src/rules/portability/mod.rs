@@ -37,6 +37,12 @@ impl Rule for BacktickQuote {
     fn description(&self) -> &'static str {
         "backticks are mysql/bigquery-only; ansi uses double quotes"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT `id`, `name` FROM `users`;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT \"id\", \"name\" FROM \"users\";"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if !only_in_ansi(p) {
             return Vec::new();
@@ -73,6 +79,12 @@ impl Rule for DoubleQuoteIdentifier {
     fn description(&self) -> &'static str {
         "double quotes are identifiers in ansi but strings in some mysql configs"
     }
+    fn example_bad(&self) -> &'static str {
+        "-- in mysql this means string, not identifier:\nSELECT * FROM \"users\";"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- ANSI: double-quoted is identifier; mysql needs backticks or ANSI_QUOTES on:\nSELECT * FROM users;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -94,6 +106,12 @@ impl Rule for PgLimitOffsetSyntax {
     }
     fn description(&self) -> &'static str {
         "LIMIT/OFFSET is postgres/mysql; ansi uses FETCH FIRST n ROWS ONLY"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM events LIMIT 10 OFFSET 100;"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- ANSI form, works on more dialects:\nSELECT * FROM events OFFSET 100 ROWS FETCH FIRST 10 ROWS ONLY;"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if p.dialect != Dialect::Ansi {
@@ -131,6 +149,12 @@ impl Rule for MysqlOnDupUpdate {
     fn description(&self) -> &'static str {
         "ON DUPLICATE KEY UPDATE is mysql-only; postgres has ON CONFLICT"
     }
+    fn example_bad(&self) -> &'static str {
+        "INSERT INTO users (id, name) VALUES (1, 'a')\nON DUPLICATE KEY UPDATE name = 'a';"
+    }
+    fn example_good(&self) -> &'static str {
+        "-- ANSI / postgres / sqlite:\nINSERT INTO users (id, name) VALUES (1, 'a')\nON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if p.dialect == Dialect::MySql {
             return Vec::new();
@@ -166,6 +190,12 @@ impl Rule for NonStandardType {
     }
     fn description(&self) -> &'static str {
         "types like SERIAL, DATETIME, TINYINT are dialect-specific"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE t (data JSONB);  -- pg-only"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE t (data JSON);  -- portable; pg can still index it"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if !only_in_ansi(p) {
@@ -207,6 +237,12 @@ impl Rule for DialectOnlyFn {
     fn description(&self) -> &'static str {
         "functions like GENERATE_SERIES, IFNULL, IF() are dialect-bound"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT NVL(name, 'unknown') FROM users;  -- oracle"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT COALESCE(name, 'unknown') FROM users;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if !only_in_ansi(p) {
             return Vec::new();
@@ -247,6 +283,12 @@ impl Rule for TopVsLimit {
     fn description(&self) -> &'static str {
         "SELECT TOP is tsql-only; drift doesn't support tsql yet"
     }
+    fn example_bad(&self) -> &'static str {
+        "SELECT TOP 10 * FROM users;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users LIMIT 10;"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if p.source.to_lowercase().contains("select top") {
             return vec![Violation {
@@ -279,6 +321,12 @@ impl Rule for RegexOp {
     }
     fn description(&self) -> &'static str {
         "~ and ~* are postgres-only; mysql uses REGEXP"
+    }
+    fn example_bad(&self) -> &'static str {
+        "SELECT * FROM users WHERE email ~ '^foo';  -- pg-only"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT * FROM users WHERE email LIKE 'foo%';\n-- or, if you need real regex, wrap in REGEXP_LIKE etc."
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         if p.dialect == Dialect::Postgres {

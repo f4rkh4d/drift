@@ -34,6 +34,12 @@ impl Rule for SnakeCaseTables {
     fn description(&self) -> &'static str {
         "table names should be snake_case"
     }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE OrderItems (id int);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE order_items (id int);"
+    }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
         for stmt in &p.statements {
@@ -72,6 +78,12 @@ impl Rule for PluralTableName {
     }
     fn description(&self) -> &'static str {
         "table names should be plural (e.g. users, not user)"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE user (id int);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE users (id int);"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -117,6 +129,12 @@ impl Rule for UpperKeywords {
     fn description(&self) -> &'static str {
         "the project convention is UPPERCASE keywords (duplicate of style.keyword-case for teams that prefer it here)"
     }
+    fn example_bad(&self) -> &'static str {
+        "select id from users where active = true;"
+    }
+    fn example_good(&self) -> &'static str {
+        "SELECT id FROM users WHERE active = true;"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -138,6 +156,12 @@ impl Rule for LowercaseColumns {
     }
     fn description(&self) -> &'static str {
         "column names should be lowercase snake_case"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE users (Id int, FullName text);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE users (id int, full_name text);"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -179,6 +203,12 @@ impl Rule for PrefixPkColumn {
     fn description(&self) -> &'static str {
         "primary key column should be `id` (not `user_id` inside users table)"
     }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE users (\n  user_id int PRIMARY KEY\n);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE users (\n  id int PRIMARY KEY\n);"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -201,6 +231,12 @@ impl Rule for FkNaming {
     fn description(&self) -> &'static str {
         "foreign key columns should be `<referenced>_id`"
     }
+    fn example_bad(&self) -> &'static str {
+        "ALTER TABLE orders ADD CONSTRAINT fk1\n  FOREIGN KEY (user_id) REFERENCES users (id);"
+    }
+    fn example_good(&self) -> &'static str {
+        "ALTER TABLE orders ADD CONSTRAINT orders_user_id_fkey\n  FOREIGN KEY (user_id) REFERENCES users (id);"
+    }
     fn check(&self, _p: &Parsed, _c: &Config) -> Vec<Violation> {
         Vec::new()
     }
@@ -222,6 +258,12 @@ impl Rule for IndexNaming {
     }
     fn description(&self) -> &'static str {
         "index names should be `ix_<table>_<cols>`"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE INDEX idx1 ON users (email);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE INDEX users_email_idx ON users (email);"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
@@ -266,6 +308,12 @@ impl Rule for NoHungarian {
     }
     fn description(&self) -> &'static str {
         "don't prefix columns with type (e.g. `str_name`, `int_count`)"
+    }
+    fn example_bad(&self) -> &'static str {
+        "CREATE TABLE users (\n  intId int,\n  strName text,\n  boolActive boolean\n);"
+    }
+    fn example_good(&self) -> &'static str {
+        "CREATE TABLE users (\n  id int,\n  name text,\n  active boolean\n);"
     }
     fn check(&self, p: &Parsed, _c: &Config) -> Vec<Violation> {
         let mut out = Vec::new();
