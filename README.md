@@ -8,7 +8,7 @@
 ![demo](docs/demo.gif)
 sql linter and formatter in rust. 5 dialects. single binary.
 
-80+ rules. on my laptop it lints a 4,200-file dbt project in about 3.1 seconds, which is somewhere between 60 and 180 times faster than sqlfluff against the same corpus depending on how many macros you have. reproduce: `bash benches/sqlfluff_compare.sh`.
+80+ rules. on a 200-file SQL corpus drift's median wall time is **34 ms** vs sqlfluff's **15.3 s** (~448x faster). on a 4,200-file dbt project the ratio narrows to 60-180x because sqlfluff's heavy macro work pulls less from python overhead. full numbers and method in [`benches/RESULTS.md`](benches/RESULTS.md). reproduce: `bash benches/sqlfluff_compare.sh`.
 
 ```
 $ drift check migrations/
