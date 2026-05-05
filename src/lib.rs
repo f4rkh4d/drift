@@ -6,6 +6,7 @@ pub mod baseline;
 pub mod cli;
 pub mod config;
 pub mod dialect;
+pub mod disables;
 pub mod fixer;
 pub mod formatter;
 pub mod lsp;

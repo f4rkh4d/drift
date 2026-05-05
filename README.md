@@ -41,6 +41,7 @@ pre-built binaries for linux/mac (amd64 + arm64) are attached to every release: 
 ```
 drift init                                 # scaffold a drift.toml in the current dir
 drift check **/*.sql                       # lint, exit 1 on errors
+                                           # honors `-- drift:disable RULE_ID` line comments
 drift check --fail-on warning ...          # exit 1 on warnings or errors
 drift check --format sarif ...             # output for github code scanning
 drift check --format json ...              # output for any other consumer
@@ -217,6 +218,28 @@ require('lspconfig.configs').drift = {
 }
 require('lspconfig').drift.setup{}
 ```
+
+## silencing one violation without touching drift.toml
+
+drop a `-- drift:disable[-next] RULE_ID` line comment near the offending SQL. four forms:
+
+```sql
+SELECT * FROM users; -- drift:disable drift.performance.select-star
+                     -- ^ silences just this line, just this rule
+
+-- drift:disable-next drift.correctness.null-equality
+SELECT * FROM users WHERE x = NULL;
+
+-- drift:disable    -- empty rule list = silence every rule on the next sql line
+SELECT * FROM users WHERE x = NULL;
+
+-- drift:disable rule.a, rule.b  -- comma-separated, applies to next line
+SELECT id FROM USERS;
+```
+
+a comment that lives on a line with SQL applies to that same line. a comment that lives on a line by itself applies to the next line. an explicit `-next` always means "next line".
+
+a handful of pre-existing rules report violations with a hard-coded line of 1; until those get fixed, disable comments cannot suppress them. the rules covered in `docs/rules/` use accurate line numbers and are honoured.
 
 ## profiling your codebase
 

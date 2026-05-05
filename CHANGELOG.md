@@ -2,11 +2,13 @@
 
 format loosely follows keep-a-changelog. dates are iso.
 
-## [unreleased]
+## [0.18.0]. 2026-05-05
 
 ### added
 
-- honor the `NO_COLOR` env var (https://no-color.org/). when `NO_COLOR` is present with any value, drift skips ANSI color codes in `pretty` output. the explicit `--no-color` flag still works and is honored on top of the env var.
+- **`drift init`**. scaffolds a starter `drift.toml` in the current directory. defaults: postgres, warn preset, correctness/security promoted to error, conventions left commented out, keyword-case = upper. `--force` overwrites an existing config; `--output FILE` writes elsewhere. closes the new-user friction step: `cargo install drift-sql && drift init && drift check **/*.sql` is now the cold-start path.
+- **per-file `-- drift:disable[-next] RULE_ID` line comments**. four forms supported (same-line, alone-on-line, explicit `-next`, comma-separated rule list, empty list = "all"). string-literal-aware: a `-- drift:disable` inside a quoted string does not silence anything. honoured by `drift check` (both stdin and file paths) before the baseline is consulted, so explicit user intent always beats legacy-debt suppression. 7 unit tests in `src/disables.rs` + 4 cli integration tests in `tests/disables_integration.rs`.
+- honour the `NO_COLOR` env var (https://no-color.org/). when `NO_COLOR` is present with any value, drift skips ANSI color codes in `pretty` output. the explicit `--no-color` flag still works and is honoured on top of the env var. (contributed by @wholovesalife in #6.)
 
 ## [0.17.0]. 2026-05-05
 

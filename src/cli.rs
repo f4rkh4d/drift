@@ -274,11 +274,15 @@ fn cmd_check(
         let dialect = cfg.dialect.unwrap_or_default();
         let parsed = parse(&src, dialect);
         let viols_raw = registry.run(&parsed, cfg);
+        // honour `-- drift:disable[-next] rule_id` line comments first; user
+        // intent always beats the rule registry.
+        let disables = crate::disables::scan(&src);
+        let viols_post_disable = crate::disables::filter_violations(&disables, &viols_raw);
         // baseline keyed by path; stdin uses "<stdin>" which is unlikely to be in
         // a baseline file. apply anyway for symmetry.
         let viols: Vec<_> = match &baseline {
-            Some(bl) => bl.filter_violations("<stdin>", &viols_raw),
-            None => viols_raw.clone(),
+            Some(bl) => bl.filter_violations("<stdin>", &viols_post_disable),
+            None => viols_post_disable,
         };
         let report = vec![FileReport {
             path: "<stdin>",
