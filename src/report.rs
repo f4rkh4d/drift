@@ -274,8 +274,20 @@ mod tests {
     #[test]
     fn sarif_is_valid_json_and_carries_rules() {
         let viols = vec![
-            v("drift.correctness.null-equality", Severity::Error, "= NULL", 12, 1),
-            v("drift.performance.select-star", Severity::Warning, "use cols", 5, 8),
+            v(
+                "drift.correctness.null-equality",
+                Severity::Error,
+                "= NULL",
+                12,
+                1,
+            ),
+            v(
+                "drift.performance.select-star",
+                Severity::Warning,
+                "use cols",
+                5,
+                8,
+            ),
         ];
         let r = FileReport {
             path: "migrations/0042.sql",
@@ -286,7 +298,9 @@ mod tests {
         let val: serde_json::Value = serde_json::from_str(&out).expect("sarif must be valid json");
         assert_eq!(val["version"], "2.1.0");
         assert_eq!(val["runs"][0]["tool"]["driver"]["name"], "drift");
-        let rules = val["runs"][0]["tool"]["driver"]["rules"].as_array().unwrap();
+        let rules = val["runs"][0]["tool"]["driver"]["rules"]
+            .as_array()
+            .unwrap();
         assert_eq!(rules.len(), 2, "two distinct rule ids");
         let results = val["runs"][0]["results"].as_array().unwrap();
         assert_eq!(results.len(), 2);

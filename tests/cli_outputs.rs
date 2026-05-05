@@ -38,8 +38,10 @@ fn run_drift_stdin(input: &str, args: &[&str]) -> (i32, String, String) {
 #[test]
 fn sarif_output_is_valid_json_with_results() {
     let sql = "SELECT * FROM users WHERE x = NULL;\n";
-    let (_code, stdout, _stderr) =
-        run_drift_stdin(sql, &["check", "--format", "sarif", "--dialect", "postgres"]);
+    let (_code, stdout, _stderr) = run_drift_stdin(
+        sql,
+        &["check", "--format", "sarif", "--dialect", "postgres"],
+    );
     let v: serde_json::Value =
         serde_json::from_str(&stdout).expect("sarif stdout should parse as json");
     assert_eq!(v["version"], "2.1.0");
@@ -47,7 +49,10 @@ fn sarif_output_is_valid_json_with_results() {
     let results = v["runs"][0]["results"]
         .as_array()
         .expect("results array present");
-    assert!(!results.is_empty(), "SELECT * + = NULL should produce findings");
+    assert!(
+        !results.is_empty(),
+        "SELECT * + = NULL should produce findings"
+    );
     // every result must carry a level vocabulary string and a physical location.
     for r in results {
         let level = r["level"].as_str().unwrap();
@@ -112,7 +117,9 @@ fn summary_suppressed_for_machine_formats() {
         !stderr.contains("checked"),
         "json output should keep stderr clean for piping; got: {stderr:?}"
     );
-    let (_code, _stdout, stderr) =
-        run_drift_stdin(sql, &["check", "--format", "sarif", "--dialect", "postgres"]);
+    let (_code, _stdout, stderr) = run_drift_stdin(
+        sql,
+        &["check", "--format", "sarif", "--dialect", "postgres"],
+    );
     assert!(!stderr.contains("checked"));
 }

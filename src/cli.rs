@@ -113,7 +113,15 @@ pub fn run(cli: Cli) -> Result<i32> {
             stdin,
             fail_on,
             baseline,
-        } => cmd_check(&cfg, &files, &fmt, stdin, !cli.no_color, &fail_on, baseline.as_deref()),
+        } => cmd_check(
+            &cfg,
+            &files,
+            &fmt,
+            stdin,
+            !cli.no_color,
+            &fail_on,
+            baseline.as_deref(),
+        ),
         Cmd::Fix { files, check } => cmd_fix(&cfg, &files, check),
         Cmd::Format { files, in_place } => cmd_format(&cfg, &files, in_place),
         Cmd::Lsp => {

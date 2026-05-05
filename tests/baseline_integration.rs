@@ -48,12 +48,7 @@ fn baseline_create_then_check_silences_all_known_violations() {
     let (code, _, stderr) = run(
         root,
         &[
-            "baseline",
-            "create",
-            "--output",
-            "bl.json",
-            "a.sql",
-            "b.sql",
+            "baseline", "create", "--output", "bl.json", "a.sql", "b.sql",
         ],
     );
     assert_eq!(code, 0);
@@ -80,7 +75,10 @@ fn baseline_create_then_check_silences_all_known_violations() {
         ],
     );
     assert_eq!(code, 0, "all violations covered by baseline -> clean run");
-    assert!(stdout.is_empty(), "stdout should be empty when nothing surfaces, got: {stdout:?}");
+    assert!(
+        stdout.is_empty(),
+        "stdout should be empty when nothing surfaces, got: {stdout:?}"
+    );
     assert!(stderr.contains("suppressed by baseline"));
 }
 
@@ -93,13 +91,7 @@ fn check_with_baseline_surfaces_only_new_violations() {
     // baseline records the legacy file's single warning.
     let (code, _, _) = run(
         root,
-        &[
-            "baseline",
-            "create",
-            "--output",
-            "bl.json",
-            "legacy.sql",
-        ],
+        &["baseline", "create", "--output", "bl.json", "legacy.sql"],
     );
     assert_eq!(code, 0);
 
@@ -121,7 +113,10 @@ fn check_with_baseline_surfaces_only_new_violations() {
     );
     assert_eq!(code, 1, "new file's warning must reach --fail-on warning");
     assert!(stdout.contains("new.sql"));
-    assert!(!stdout.contains("legacy.sql"), "legacy violations are suppressed");
+    assert!(
+        !stdout.contains("legacy.sql"),
+        "legacy violations are suppressed"
+    );
     assert!(stderr.contains("1 warning"));
     assert!(stderr.contains("suppressed by baseline"));
 }
@@ -130,10 +125,7 @@ fn check_with_baseline_surfaces_only_new_violations() {
 fn baseline_show_reports_counts() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
-    write(
-        &root.join("a.sql"),
-        "SELECT * FROM users WHERE x = NULL;\n",
-    );
+    write(&root.join("a.sql"), "SELECT * FROM users WHERE x = NULL;\n");
 
     let (_, _, _) = run(
         root,
