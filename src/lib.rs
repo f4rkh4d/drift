@@ -2,6 +2,7 @@
 //!
 //! public surface is intentionally small. most callers use the cli.
 
+pub mod baseline;
 pub mod cli;
 pub mod config;
 pub mod dialect;

@@ -6,6 +6,7 @@ format loosely follows keep-a-changelog. dates are iso.
 
 ### added
 
+- `drift baseline create` and `drift check --baseline FILE`. snapshot existing violations into `.drift-baseline.json` and from then on only NEW violations surface; the legacy debt is locked in but cannot grow. count-based per (file, rule) keying so reformat / line-shift edits do not flip the suppression. `drift baseline show` prints a summary. summary line of `drift check` annotates `(N suppressed by baseline)` so debt remains visible at a glance. critical for adopting drift on a legacy codebase that would otherwise drown in cold-start warnings.
 - `--format sarif` on `drift check`. emits SARIF 2.1.0 that github code scanning ingests directly, surfacing each violation as an inline annotation on the pull request that opened it. severity maps as error -> error, warning -> warning, info -> note, off -> none.
 - `--fail-on error|warning|info|never` on `drift check`. picks the minimum severity that triggers a non-zero exit code. default `error`. `never` disables the gate entirely (useful in code-scanning workflows where the upload step must always run).
 - summary line on stderr at the end of `drift check`: "checked N files in T ms: X errors, Y warnings, Z info". emitted only for human formats (`pretty`, `compact`); machine formats (`json`, `sarif`, `checkstyle`) keep stdout AND stderr clean for piping.
@@ -16,6 +17,7 @@ format loosely follows keep-a-changelog. dates are iso.
 - reproducible benchmark script at `benches/sqlfluff_compare.sh`. clones a public dbt project, renders it, runs drift and sqlfluff back to back, prints the two wall-clock times. lets readers verify the sqlfluff comparison instead of taking my word for it.
 - crates.io / version / license / ci badges in the readme.
 - `tests/cli_outputs.rs`: end-to-end coverage for sarif validity, fail-on threshold semantics, and stderr summary placement (5 cases).
+- `tests/baseline_integration.rs`: end-to-end coverage for the baseline workflow including create, show, suppression, new-violation surfacing, and missing-file errors (5 cases). plus 6 unit tests in `src/baseline.rs`.
 
 ### changed
 

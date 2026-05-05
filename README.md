@@ -39,16 +39,19 @@ pre-built binaries for linux/mac (amd64 + arm64) are attached to every release: 
 ## quick start
 
 ```
-drift check **/*.sql                  # lint, exit 1 on errors
-drift check --fail-on warning ...     # exit 1 on warnings or errors
-drift check --format sarif ...        # output for github code scanning
-drift check --format json ...         # output for any other consumer
-drift fix                             # apply safe auto-fixes
-drift format queries.sql              # reformat to stdout
-drift format -i queries.sql           # rewrite in place
-drift rules                           # list all rules
+drift check **/*.sql                       # lint, exit 1 on errors
+drift check --fail-on warning ...          # exit 1 on warnings or errors
+drift check --format sarif ...             # output for github code scanning
+drift check --format json ...              # output for any other consumer
+drift check --baseline .drift-baseline.json ...  # silence violations recorded in the baseline
+drift baseline create migrations/          # snapshot current violations into .drift-baseline.json
+drift baseline show                        # print a summary of an existing baseline
+drift fix                                  # apply safe auto-fixes
+drift format queries.sql                   # reformat to stdout
+drift format -i queries.sql                # rewrite in place
+drift rules                                # list all rules
 drift explain drift.correctness.null-equality
-drift lsp                             # language server over stdio
+drift lsp                                  # language server over stdio
 ```
 
 any of them take `--dialect postgres|mysql|sqlite|bigquery|ansi`. when left unset, drift looks at the file extension and then the nearest `drift.toml`.
@@ -207,6 +210,28 @@ require('lspconfig.configs').drift = {
 }
 require('lspconfig').drift.setup{}
 ```
+
+## adopting drift on a legacy codebase (baseline)
+
+running drift cold against a 10-year-old SQL repo emits thousands of warnings, nobody fixes them, the team turns drift off. the baseline file fixes this:
+
+```sh
+# one-time: take a snapshot of every current violation.
+drift baseline create migrations/ models/ analytics/
+
+# from now on, only NEW violations surface. the legacy debt is locked.
+drift check --baseline .drift-baseline.json migrations/ models/ analytics/
+```
+
+how it works:
+
+- `.drift-baseline.json` records, for each file, the count of violations per rule. line numbers are not part of the key on purpose: code edits shift them.
+- on subsequent `drift check --baseline`, the first N matching violations per (file, rule) are silenced. the (N+1)th and beyond surface.
+- adding a new file with a violation surfaces normally. introducing a NEW rule violation in an old file surfaces normally.
+- the summary line tells you how many were suppressed, so you always know how much debt remains: `... (147 suppressed by baseline)`.
+- to refresh the baseline (e.g. after a cleanup pass): rerun `drift baseline create`.
+
+commit `.drift-baseline.json` to your repo. inspect with `drift baseline show`.
 
 ## faq
 

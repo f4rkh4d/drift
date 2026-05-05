@@ -48,6 +48,10 @@ pub enum Cmd {
         /// minimum severity that triggers a non-zero exit code
         #[arg(long, default_value = "error", value_parser = ["error", "warning", "info", "never"])]
         fail_on: String,
+        /// suppress violations recorded in a baseline file. typical usage:
+        /// `--baseline .drift-baseline.json`.
+        #[arg(long)]
+        baseline: Option<PathBuf>,
     },
     /// apply safe auto-fixes
     Fix {
@@ -71,6 +75,29 @@ pub enum Cmd {
         #[arg(long)]
         json: bool,
     },
+    /// create or inspect a baseline file (a snapshot of currently-known
+    /// violations to suppress on subsequent `drift check --baseline` runs)
+    Baseline {
+        #[command(subcommand)]
+        sub: BaselineSub,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum BaselineSub {
+    /// run a check and record every violation into a baseline file
+    Create {
+        files: Vec<PathBuf>,
+        /// write the baseline here (default: .drift-baseline.json)
+        #[arg(long, default_value = ".drift-baseline.json")]
+        output: PathBuf,
+    },
+    /// print a summary of an existing baseline file
+    Show {
+        /// baseline path (default: .drift-baseline.json)
+        #[arg(long, default_value = ".drift-baseline.json")]
+        path: PathBuf,
+    },
 }
 
 pub fn run(cli: Cli) -> Result<i32> {
@@ -85,7 +112,8 @@ pub fn run(cli: Cli) -> Result<i32> {
             format: fmt,
             stdin,
             fail_on,
-        } => cmd_check(&cfg, &files, &fmt, stdin, !cli.no_color, &fail_on),
+            baseline,
+        } => cmd_check(&cfg, &files, &fmt, stdin, !cli.no_color, &fail_on, baseline.as_deref()),
         Cmd::Fix { files, check } => cmd_fix(&cfg, &files, check),
         Cmd::Format { files, in_place } => cmd_format(&cfg, &files, in_place),
         Cmd::Lsp => {
@@ -94,6 +122,10 @@ pub fn run(cli: Cli) -> Result<i32> {
         }
         Cmd::Explain { rule } => cmd_explain(&rule),
         Cmd::Rules { json } => cmd_rules(json),
+        Cmd::Baseline { sub } => match sub {
+            BaselineSub::Create { files, output } => cmd_baseline_create(&cfg, &files, &output),
+            BaselineSub::Show { path } => cmd_baseline_show(&path),
+        },
     }
 }
 
@@ -151,10 +183,16 @@ fn cmd_check(
     stdin: bool,
     color: bool,
     fail_on: &str,
+    baseline_path: Option<&Path>,
 ) -> Result<i32> {
     let format = Format::parse(fmt).ok_or_else(|| anyhow::anyhow!("unknown format: {fmt}"))?;
     let threshold = parse_fail_on(fail_on)?;
     let registry = Registry::new();
+
+    let baseline = match baseline_path {
+        Some(p) => Some(crate::baseline::Baseline::load(p)?),
+        None => None,
+    };
 
     if stdin {
         use std::io::Read;
@@ -163,7 +201,13 @@ fn cmd_check(
         std::io::stdin().read_to_string(&mut src)?;
         let dialect = cfg.dialect.unwrap_or_default();
         let parsed = parse(&src, dialect);
-        let viols = registry.run(&parsed, cfg);
+        let viols_raw = registry.run(&parsed, cfg);
+        // baseline keyed by path; stdin uses "<stdin>" which is unlikely to be in
+        // a baseline file. apply anyway for symmetry.
+        let viols: Vec<_> = match &baseline {
+            Some(bl) => bl.filter_violations("<stdin>", &viols_raw),
+            None => viols_raw.clone(),
+        };
         let report = vec![FileReport {
             path: "<stdin>",
             source: &src,
@@ -195,7 +239,68 @@ fn cmd_check(
         })
         .collect();
 
-    let breached = results.iter().any(|(_, _, v)| breaches(v, threshold));
+    // apply baseline (if any) before counting against the fail threshold and
+    // before rendering. suppressed violations vanish from output entirely so
+    // pretty / json / sarif all see the same filtered set.
+    let mut suppressed_count = 0usize;
+    let borrowed: Vec<(String, String, Vec<_>)> = results
+        .into_iter()
+        .map(|(p, s, v)| {
+            let path_str = p.to_string_lossy().into_owned();
+            let v = match &baseline {
+                Some(bl) => {
+                    let kept = bl.filter_violations(&path_str, &v);
+                    suppressed_count += v.len() - kept.len();
+                    kept
+                }
+                None => v,
+            };
+            (path_str, s, v)
+        })
+        .collect();
+
+    let breached = borrowed.iter().any(|(_, _, v)| breaches(v, threshold));
+    let reports: Vec<FileReport> = borrowed
+        .iter()
+        .map(|(p, s, v)| FileReport {
+            path: p,
+            source: s,
+            violations: v,
+        })
+        .collect();
+    print!("{}", render(&reports, format, color));
+
+    if matches!(format, Format::Pretty | Format::Compact) {
+        let elapsed_ms = started.elapsed().as_millis();
+        let mut line = crate::report::summary_line(&reports, elapsed_ms);
+        if suppressed_count > 0 {
+            line.push_str(&format!(" ({suppressed_count} suppressed by baseline)"));
+        }
+        eprintln!("{line}");
+    }
+
+    Ok(if breached { 1 } else { 0 })
+}
+
+fn cmd_baseline_create(cfg: &Config, files: &[PathBuf], output: &Path) -> Result<i32> {
+    let registry = Registry::new();
+    let files = expand(files);
+    if files.is_empty() {
+        eprintln!("no files matched, baseline would be empty. aborting.");
+        return Ok(2);
+    }
+
+    let results: Vec<(PathBuf, String, Vec<_>)> = files
+        .par_iter()
+        .filter_map(|path| {
+            let src = std::fs::read_to_string(path).ok()?;
+            let dialect = pick_dialect(cfg, path);
+            let parsed = parse(&src, dialect);
+            let viols = registry.run(&parsed, cfg);
+            Some((path.clone(), src, viols))
+        })
+        .collect();
+
     let borrowed: Vec<(String, String, Vec<_>)> = results
         .into_iter()
         .map(|(p, s, v)| (p.to_string_lossy().into_owned(), s, v))
@@ -208,16 +313,39 @@ fn cmd_check(
             violations: v,
         })
         .collect();
-    print!("{}", render(&reports, format, color));
 
-    // summary on stderr only for human formats so json / sarif / checkstyle stdout
-    // stays a clean machine-readable stream.
-    if matches!(format, Format::Pretty | Format::Compact) {
-        let elapsed_ms = started.elapsed().as_millis();
-        eprintln!("{}", crate::report::summary_line(&reports, elapsed_ms));
+    let baseline = crate::baseline::Baseline::from_reports(&reports);
+    baseline.save(output)?;
+
+    eprintln!(
+        "wrote {} ({} files, {} violations recorded)",
+        output.display(),
+        baseline.files.len(),
+        baseline.total(),
+    );
+    Ok(0)
+}
+
+fn cmd_baseline_show(path: &Path) -> Result<i32> {
+    let bl = crate::baseline::Baseline::load(path)?;
+    println!("baseline: {}", path.display());
+    println!("  schema:        {}", bl.schema);
+    println!("  drift_version: {}", bl.drift_version);
+    println!("  created_at:    {}", bl.created_at);
+    println!("  files:         {}", bl.files.len());
+    println!("  violations:    {}", bl.total());
+    if bl.is_empty() {
+        return Ok(0);
     }
-
-    Ok(if breached { 1 } else { 0 })
+    println!();
+    for (file, rules) in &bl.files {
+        let total: usize = rules.values().sum();
+        println!("  {file} ({total})");
+        for (rule, n) in rules {
+            println!("    {rule}  x{n}");
+        }
+    }
+    Ok(0)
 }
 
 /// "error|warning|info|never" -> threshold severity. anything at or above the
