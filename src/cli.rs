@@ -45,6 +45,9 @@ pub enum Cmd {
         format: String,
         #[arg(long)]
         stdin: bool,
+        /// minimum severity that triggers a non-zero exit code
+        #[arg(long, default_value = "error", value_parser = ["error", "warning", "info", "never"])]
+        fail_on: String,
     },
     /// apply safe auto-fixes
     Fix {
@@ -81,7 +84,8 @@ pub fn run(cli: Cli) -> Result<i32> {
             files,
             format: fmt,
             stdin,
-        } => cmd_check(&cfg, &files, &fmt, stdin, !cli.no_color),
+            fail_on,
+        } => cmd_check(&cfg, &files, &fmt, stdin, !cli.no_color, &fail_on),
         Cmd::Fix { files, check } => cmd_fix(&cfg, &files, check),
         Cmd::Format { files, in_place } => cmd_format(&cfg, &files, in_place),
         Cmd::Lsp => {
@@ -140,12 +144,21 @@ fn pick_dialect(cfg: &Config, path: &Path) -> Dialect {
     Dialect::detect_from_path(path).unwrap_or_default()
 }
 
-fn cmd_check(cfg: &Config, files: &[PathBuf], fmt: &str, stdin: bool, color: bool) -> Result<i32> {
+fn cmd_check(
+    cfg: &Config,
+    files: &[PathBuf],
+    fmt: &str,
+    stdin: bool,
+    color: bool,
+    fail_on: &str,
+) -> Result<i32> {
     let format = Format::parse(fmt).ok_or_else(|| anyhow::anyhow!("unknown format: {fmt}"))?;
+    let threshold = parse_fail_on(fail_on)?;
     let registry = Registry::new();
 
     if stdin {
         use std::io::Read;
+        let started = std::time::Instant::now();
         let mut src = String::new();
         std::io::stdin().read_to_string(&mut src)?;
         let dialect = cfg.dialect.unwrap_or_default();
@@ -157,9 +170,14 @@ fn cmd_check(cfg: &Config, files: &[PathBuf], fmt: &str, stdin: bool, color: boo
             violations: &viols,
         }];
         print!("{}", render(&report, format, color));
-        return Ok(if has_error(&viols) { 1 } else { 0 });
+        if matches!(format, Format::Pretty | Format::Compact) {
+            let elapsed_ms = started.elapsed().as_millis();
+            eprintln!("{}", crate::report::summary_line(&report, elapsed_ms));
+        }
+        return Ok(if breaches(&viols, threshold) { 1 } else { 0 });
     }
 
+    let started = std::time::Instant::now();
     let files = expand(files);
     if files.is_empty() {
         eprintln!("no files matched");
@@ -177,7 +195,7 @@ fn cmd_check(cfg: &Config, files: &[PathBuf], fmt: &str, stdin: bool, color: boo
         })
         .collect();
 
-    let any_error = results.iter().any(|(_, _, v)| has_error(v));
+    let breached = results.iter().any(|(_, _, v)| breaches(v, threshold));
     let borrowed: Vec<(String, String, Vec<_>)> = results
         .into_iter()
         .map(|(p, s, v)| (p.to_string_lossy().into_owned(), s, v))
@@ -191,11 +209,51 @@ fn cmd_check(cfg: &Config, files: &[PathBuf], fmt: &str, stdin: bool, color: boo
         })
         .collect();
     print!("{}", render(&reports, format, color));
-    Ok(if any_error { 1 } else { 0 })
+
+    // summary on stderr only for human formats so json / sarif / checkstyle stdout
+    // stays a clean machine-readable stream.
+    if matches!(format, Format::Pretty | Format::Compact) {
+        let elapsed_ms = started.elapsed().as_millis();
+        eprintln!("{}", crate::report::summary_line(&reports, elapsed_ms));
+    }
+
+    Ok(if breached { 1 } else { 0 })
 }
 
-fn has_error(v: &[crate::Violation]) -> bool {
-    v.iter().any(|x| x.severity == Severity::Error)
+/// "error|warning|info|never" -> threshold severity. anything at or above the
+/// threshold makes `drift check` exit non-zero. "never" disables the gate.
+#[derive(Copy, Clone, Debug)]
+enum FailThreshold {
+    Error,
+    Warning,
+    Info,
+    Never,
+}
+
+fn parse_fail_on(s: &str) -> Result<FailThreshold> {
+    Ok(match s {
+        "error" => FailThreshold::Error,
+        "warning" => FailThreshold::Warning,
+        "info" => FailThreshold::Info,
+        "never" => FailThreshold::Never,
+        other => anyhow::bail!("unknown --fail-on: {other} (use error|warning|info|never)"),
+    })
+}
+
+fn breaches(v: &[crate::Violation], t: FailThreshold) -> bool {
+    let rank = |s: Severity| match s {
+        Severity::Error => 3,
+        Severity::Warning => 2,
+        Severity::Info => 1,
+        Severity::Off => 0,
+    };
+    let threshold_rank = match t {
+        FailThreshold::Error => 3,
+        FailThreshold::Warning => 2,
+        FailThreshold::Info => 1,
+        FailThreshold::Never => return false,
+    };
+    v.iter().any(|x| rank(x.severity) >= threshold_rank)
 }
 
 fn cmd_fix(cfg: &Config, files: &[PathBuf], check: bool) -> Result<i32> {

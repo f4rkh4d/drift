@@ -6,12 +6,16 @@ format loosely follows keep-a-changelog. dates are iso.
 
 ### added
 
+- `--format sarif` on `drift check`. emits SARIF 2.1.0 that github code scanning ingests directly, surfacing each violation as an inline annotation on the pull request that opened it. severity maps as error -> error, warning -> warning, info -> note, off -> none.
+- `--fail-on error|warning|info|never` on `drift check`. picks the minimum severity that triggers a non-zero exit code. default `error`. `never` disables the gate entirely (useful in code-scanning workflows where the upload step must always run).
+- summary line on stderr at the end of `drift check`: "checked N files in T ms: X errors, Y warnings, Z info". emitted only for human formats (`pretty`, `compact`); machine formats (`json`, `sarif`, `checkstyle`) keep stdout AND stderr clean for piping.
 - one-line installer: `curl -fsSL https://raw.githubusercontent.com/f4rkh4d/drift/main/install.sh | sh`. picks the right linux/mac amd64/arm64 archive from the latest release.
 - composite github action at the repo root (`action.yml`). pipelines can now `uses: f4rkh4d/drift@main` with `command`, `paths`, `fail-on`, `config`, `version`, `args` inputs.
 - pre-commit hooks (`.pre-commit-hooks.yaml`): `drift-check`, `drift-fix`, `drift-format`.
 - homebrew formula in `f4rkh4d/homebrew-tap`: `brew install f4rkh4d/tap/drift` on macOS.
 - reproducible benchmark script at `benches/sqlfluff_compare.sh`. clones a public dbt project, renders it, runs drift and sqlfluff back to back, prints the two wall-clock times. lets readers verify the sqlfluff comparison instead of taking my word for it.
 - crates.io / version / license / ci badges in the readme.
+- `tests/cli_outputs.rs`: end-to-end coverage for sarif validity, fail-on threshold semantics, and stderr summary placement (5 cases).
 
 ### changed
 

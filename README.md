@@ -39,13 +39,16 @@ pre-built binaries for linux/mac (amd64 + arm64) are attached to every release: 
 ## quick start
 
 ```
-drift check **/*.sql         # lint
-drift fix                    # apply safe auto-fixes
-drift format queries.sql     # reformat to stdout
-drift format -i queries.sql  # rewrite in place
-drift rules                  # list all rules
+drift check **/*.sql                  # lint, exit 1 on errors
+drift check --fail-on warning ...     # exit 1 on warnings or errors
+drift check --format sarif ...        # output for github code scanning
+drift check --format json ...         # output for any other consumer
+drift fix                             # apply safe auto-fixes
+drift format queries.sql              # reformat to stdout
+drift format -i queries.sql           # rewrite in place
+drift rules                           # list all rules
 drift explain drift.correctness.null-equality
-drift lsp                    # language server over stdio
+drift lsp                             # language server over stdio
 ```
 
 any of them take `--dialect postgres|mysql|sqlite|bigquery|ansi`. when left unset, drift looks at the file extension and then the nearest `drift.toml`.
@@ -131,6 +134,35 @@ pgformatter is postgres-only, formatter-only. sqlfmt is postgres + dbt-flavored,
 ```
 
 inputs: `command` (default `check`), `paths`, `fail-on` (`error|warning|info|never`), `config`, `version`, `args`. pin `@main` to a release tag for stability.
+
+### github code scanning (sarif)
+
+`--format sarif` produces SARIF 2.1.0 that github ingests natively. each violation surfaces as an inline annotation on the pull request that opened it.
+
+```yaml
+name: drift
+on: [pull_request]
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: f4rkh4d/drift@main
+        with:
+          paths: 'migrations/'
+          args: '--format sarif'
+          fail-on: never
+        continue-on-error: true
+        id: drift
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: drift.sarif
+```
+
+(piping drift's stdout to `drift.sarif` and uploading is the easy way; the action's `args: '--format sarif'` makes drift emit it. `fail-on: never` keeps the job from failing on findings so the upload always runs.)
 
 ### pre-commit
 
